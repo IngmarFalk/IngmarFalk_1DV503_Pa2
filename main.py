@@ -1,19 +1,21 @@
-import logging
-
 import fastapi
-from db.db_manager import DBManager
-import db.queries as queries
-import db.tables as tables
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from fastapi import FastAPI, Depends, Request
+from sqlalchemy.orm import Session
+from fastapi.responses import HTMLResponse
 
-LOGIN_DATA = {
-    "host": "localhost",
-    "user": "manu",
-    "password": "Immanuel2021!",
-}
-
-DB = "falkii"
 
 app = fastapi.FastAPI()
+
+ROUTES = {
+    "home": "/",
+    "index": "/index",
+    "tasks": "/tasks",
+}
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="templates")
 
 
 @app.get("/")
@@ -21,30 +23,31 @@ async def root():
     return {"message": "Hello World"}
 
 
-@app.get("/items/{id}")
-async def get_item(id):
-    return {"item_id": id}
+@app.get(ROUTES["index"], response_class=HTMLResponse)
+async def get_item(
+    req: Request,
+):
+    return templates.TemplateResponse("index.html", {"requser": req})
 
 
-# def main():
-
-# db = DBManager()
-
-# logging.basicConfig(level=logging.INFO, filename="info.log")
-
-# if not db.exists():
-#     db.query(queries.create_db(db.db))
-#     db.query("USE " + db.db)
-#     db.query(queries.create_table("users", *tables.get_users_cols()))
-#     db.query(queries.create_table("user_info", *tables.get_user_info()))
-#     db.query(
-#         queries.create_table("organizations", *tables.get_organizations_cols())
-#     )
-#     db.query(queries.create_table("projects", *tables.get_project_cols()))
-#     db.query(queries.create_table("project_leaders", *tables.get_project_leaders()))
-#     db.query(queries.create_table("tasks", *tables.get_tasks_cols()))
-#     db.query
-
-
-# if __name__ == "__main__":
-#     main()
+@app.get(ROUTES["tasks"], response_class=HTMLResponse)
+async def get_book(
+    req: Request,
+    name: str = "Max",
+    params: list = [
+        "Clean Dishes",
+        "Bring out garbage",
+        "Make Salad",
+        "Feed Lamas",
+        "Spill the beans",
+        "Talk to Putin",
+    ],
+):
+    return templates.TemplateResponse(
+        "tasks.html",
+        {
+            "request": req,
+            "name": name,
+            "params": params,
+        },
+    )
