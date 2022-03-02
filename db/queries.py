@@ -1,3 +1,6 @@
+#! venv/bin/python
+
+
 def create_db(db_name: str) -> str:
     return "CREATE DATABASE IF NOT EXISTS " + db_name
 

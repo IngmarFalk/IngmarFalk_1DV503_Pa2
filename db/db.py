@@ -1,3 +1,4 @@
+#! venv/bin/python
 from db.db_manager import DBManager
 import db.queries as queries
 import db.tables as tables

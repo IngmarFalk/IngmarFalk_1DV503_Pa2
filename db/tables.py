@@ -1,3 +1,6 @@
+#! venv/bin/python
+
+
 def get_tasks_cols() -> tuple:
     return (
         "id INT NOT NULL AUTO_INCREMENT",
