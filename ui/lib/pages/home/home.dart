@@ -22,13 +22,14 @@ class Home extends ConsumerWidget {
         body: Container(
           height: size.height,
           width: size.width,
-          color: kcIceBlue.withOpacity(.5),
+          color: kcIceBlue.withOpacity(.2),
           child: Stack(
             children: <Widget>[
               Positioned(
                 top: 0,
                 left: 0,
                 child: NavBar(
+                  // color: kcIceBlue.withOpacity(.1),
                   height: navBarHeight,
                   width: size.width - margin * 2,
                 ),
@@ -37,15 +38,16 @@ class Home extends ConsumerWidget {
                 top: navBarHeight + margin,
                 left: 0,
                 child: SideBar(
+                  color: kcIceBlue.withOpacity(.1),
                   width: sideBarWidth,
                   height: size.height - navBarHeight - margin * 3,
                 ),
               ),
               Positioned(
-                right: 0,
                 bottom: 0,
+                right: sideBarWidth + margin,
                 child: ProjectsView(
-                  width: size.width - sideBarWidth - margin * 3,
+                  width: size.width - (sideBarWidth + margin * 3) * 2,
                   height: size.height - navBarHeight - margin * 3,
                 ),
               ),

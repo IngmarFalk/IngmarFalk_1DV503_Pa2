@@ -7,7 +7,9 @@ import 'package:ui/widgets/widgets.dart';
 class SideBar extends ConsumerWidget {
   final double height;
   final double width;
+  final Color color;
   SideBar({
+    this.color = kcIceBlue,
     this.height = double.infinity,
     this.width = 200,
     Key? key,
@@ -28,10 +30,11 @@ class SideBar extends ConsumerWidget {
       width: width,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
-        color: kcIceBlue,
+        color: color,
       ),
       child: Column(
         children: <Widget>[
+          const SizedBox(height: 10),
           SideBarItem(
             text: "O R G A N I Z A T I O N S",
             onTap: () {},

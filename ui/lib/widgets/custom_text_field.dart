@@ -29,7 +29,7 @@ class CustomTextField extends ConsumerWidget {
   final ValueChanged<String>? onChanged;
   final Function? validator;
   final GestureTapCallback? onTap;
-  final TextEditingController? controller;
+  TextEditingController? controller;
 
   CustomTextField({
     this.width = 500,
@@ -58,7 +58,9 @@ class CustomTextField extends ConsumerWidget {
     this.hintText,
     this.prefixIcon,
     this.suffixIcon,
-    this.margin,
+    this.margin = const EdgeInsets.only(
+      bottom: 15,
+    ),
     this.onClickSuffix,
     this.textBaseline,
     this.fontWeight,

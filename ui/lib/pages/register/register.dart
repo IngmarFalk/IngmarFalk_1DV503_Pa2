@@ -155,7 +155,12 @@ class RegisterForm extends HookWidget {
           const SizedBox(height: 40),
           ...buildLoginButtons(
             context: context,
-            loginData: {email.value: pw.value},
+            loginData: {
+              "email": email.value,
+              "password": pw.value,
+              "firstName": firstName.value,
+              "secondName": secondName.value,
+            },
           ),
         ],
       ),

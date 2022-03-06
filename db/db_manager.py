@@ -63,6 +63,7 @@ class DBManager:
 
     def query(self, query: str, *params) -> None:
         """Takes in a Sql statement as well as the arguments it needs and tries to execute it."""
+        print(query)
         try:
             log.info(
                 "Called query:\t"

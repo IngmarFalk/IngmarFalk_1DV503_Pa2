@@ -34,6 +34,7 @@ ROUTES = {
     "home": "/",
     "login": "/login/",
     "register": "/register/",
+    "create_project": "/create_project/",
     "user": "/user/",
     "organizations": "/organizations/",
     "projects": "/organisations/id/projects/",
@@ -47,25 +48,6 @@ async def root():
 
 
 " -------------Login-------------"
-
-
-class User(Table):
-    id: INT = INT(
-        primary_key=True,
-        auto_increment=True,
-    )
-    email: VARCHAR = VARCHAR(
-        size=255,
-    )
-    username: VARCHAR = VARCHAR(
-        size=255,
-    )
-    firstname: VARCHAR = VARCHAR(
-        size=255,
-    )
-    lastname: VARCHAR = VARCHAR(
-        size=255,
-    )
 
 
 # @app.get(ROUTES["login"])

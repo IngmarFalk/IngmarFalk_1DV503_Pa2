@@ -5,8 +5,10 @@ import 'package:ui/theme/colors.dart';
 class NavBar extends ConsumerWidget {
   final double height;
   final double width;
+  final Color color;
 
   const NavBar({
+    this.color = const Color(0xFF009dae),
     this.height = 100,
     this.width = double.infinity,
     Key? key,
@@ -20,7 +22,7 @@ class NavBar extends ConsumerWidget {
       width: width,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF009dae),
+        color: color,
         borderRadius: BorderRadius.circular(10),
       ),
     );
