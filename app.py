@@ -21,11 +21,12 @@ def init_db() -> DBManager:
 
 
 class Users(Table):
-    id: INT = INT(primary_key=True, auto_increment=True)
     email: VARCHAR = VARCHAR(size=255)
     username: VARCHAR = VARCHAR(size=255)
     firstname: VARCHAR = VARCHAR(size=255)
     lastname: VARCHAR = VARCHAR(size=255)
+    password: VARCHAR = VARCHAR(size=255)
+    role: VARCHAR = VARCHAR(size=255)
 
 
 class Projects(Table):
@@ -53,17 +54,17 @@ class Organizations(Table):
 
 
 class Admins(Table):
-    name: VARCHAR = VARCHAR(size=255)
+    username: VARCHAR = VARCHAR(size=255)
     organization: VARCHAR = VARCHAR(size=255)
 
 
 class Developers(Table):
-    name: VARCHAR = VARCHAR(size=255)
+    username: VARCHAR = VARCHAR(size=255)
     organization: VARCHAR = VARCHAR(size=255)
 
 
 class ProjectLeaders(Table):
-    name: VARCHAR = VARCHAR(size=255)
+    username: VARCHAR = VARCHAR(size=255)
     project: VARCHAR = VARCHAR(size=255)
     organization: VARCHAR = VARCHAR(size=255)
 
