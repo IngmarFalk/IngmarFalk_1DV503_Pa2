@@ -17,6 +17,8 @@ def init_db() -> DBManager:
         for table in ProjM().tables.values():
             db.query(table.asSql())
 
+    " TODO : Create roles "
+
     return db
 
 

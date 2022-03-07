@@ -41,6 +41,7 @@ ROUTES = {
     "alter_project": "/user/{username}/alter_project/",
     "delete_project": "/user/{username}/delete_project/",
     "create_org": "user/{username}/create_org",
+    "delete_org": "user/{username}/delete_org",
 }
 
 DB_MANAGER = init_db()
@@ -77,6 +78,9 @@ async def validate(login_data: dict[Any, Any]) -> str:
     if not await check_for_user(login_data):
         return "No such user exists"
 
+    if len(login_data["password"]) < 8:
+        return "Password must be at least 8 characters"
+
     """
     It is a terrible idea to store user passwords in plain text, but for this project
     it should be fine. If I am to extend this app, this is definetely something I have
@@ -102,6 +106,9 @@ async def register(register_data: dict[Any, Any]) -> dict[Any, Any]:
     """TODO : implement a post request that takes in an email, username and password
     and checks wether there is no duplicate in the database"""
 
+    if len(register_data["password"]) < 8:
+        return {"msg": "Password must be at least 8 characters"}
+
     "Validating that there are no existing users with the same email and username"
     if not await check_for_user(register_data):
         print("Does not exist")
@@ -115,10 +122,10 @@ async def register(register_data: dict[Any, Any]) -> dict[Any, Any]:
 "-------------Add-------------"
 
 
-@app.post(ROUTES[""])
-async def add_user(userData: dict[Any, Any], table: str) -> dict[Any, Any]:
-    """"""
-    return {}
+# @app.post(ROUTES[""])
+# async def add_user(userData: dict[Any, Any], table: str) -> dict[Any, Any]:
+#     """"""
+#     return {}
 
 
 "-------------Delete-------------"
@@ -131,11 +138,18 @@ async def delete_user(user_data: dict[Any, Any], tables: list[str]) -> str:
     if "users" in tables:
         tables.remove("users")
 
-    q = f"""DELETE FROM users, {', '.join([table for table in tables])}"""
+    DB_MANAGER.use()
+
+    "This works"
+    "delete from users where username = 'imanu';"
+
+    q = f"""DELETE users, {', '.join([table for table in tables])} FROM users"""
     for table in tables:
-        q += " INNER JOIN " + table + " on " + table + ".username = users.username"
-    q += f" and users.username = '{str(user_data['username'])}';"
-    print(q)
+        q += " INNER JOIN " + table + " ON " + table + ".username = users.username\n"
+    q += f" WHERE users.username = '{str(user_data['username'])}';"
+    DB_MANAGER.query(q)
+
+    print(DB_MANAGER.query_result)
     return ""
 
 
@@ -177,7 +191,7 @@ async def check_for_project(project_data: dict[Any, Any]) -> bool:
     """
     DB_MANAGER.use()
     DB_MANAGER.query(
-        f"""SELECT * FROM projects 
+        f"""SELECT * FROM projects
         WHERE organization = '{project_data['organization']}'
         AND name = '{project_data['name']}';"""
     )
@@ -195,7 +209,7 @@ async def create_project(project_data: dict[Any, Any], username: str) -> dict[An
     initiales him as the initial project leader.
     """
 
-    if not check_for_project(project_data):
+    if not await check_for_project(project_data):
         DB_MANAGER.use()
         DB_MANAGER.query(ProjM().projects.insert(project_data), *project_data.values())
         DB_MANAGER.query(
@@ -204,12 +218,19 @@ async def create_project(project_data: dict[Any, Any], username: str) -> dict[An
                     "username": username,
                     "project": project_data["name"],
                     "organization": project_data["organization"],
-                }
-            )
+                },
+            ),
+            *[username, project_data["name"], project_data["organization"]],
         )
         return {"msg": ""}
 
     return {"msg": "Project already exists"}
+
+
+@app.post(ROUTES["delete_project"])
+async def delete_project(project_data: dict[Any, Any]) -> dict[Any, Any]:
+    """"""
+    return {}
 
 
 "++++++++++++++++++++Organization Table Apis+++++++++++++++++++"
@@ -219,7 +240,7 @@ async def check_for_org(org_data: dict[Any, Any]) -> bool:
     """Checks in the database if an organization with this name already exists."""
     DB_MANAGER.use()
     DB_MANAGER.query(
-        f"""SELECT * FROM organizations 
+        f"""SELECT * FROM organizations
         WHERE name = '{org_data['name']}';"""
     )
     if len(DB_MANAGER.query_result) == 0:
@@ -227,7 +248,24 @@ async def check_for_org(org_data: dict[Any, Any]) -> bool:
     return True
 
 
-@app.post(ROUTES[""])
-async def create_org(org_data: dict[Any, Any]) -> dict[Any, Any]:
+@app.post(ROUTES["create_org"])
+async def create_org(org_data: dict[Any, Any], username: str) -> dict[Any, Any]:
+    """"""
+    if not check_for_org(org_data):
+        DB_MANAGER.use()
+        DB_MANAGER.query(ProjM().organizations.insert(org_data), *org_data.values())
+        DB_MANAGER.query(
+            ProjM().admins.insert(
+                {
+                    "username": username,
+                    "organization": org_data["name"],
+                }
+            )
+        )
+    return {}
+
+
+@app.post(ROUTES["delete_org"])
+async def delete_org(org_data: dict[Any, Any]) -> dict[Any, Any]:
     """"""
     return {}

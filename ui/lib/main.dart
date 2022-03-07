@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:ui/pages/home/home.dart';
 import 'package:ui/pages/home/projects_view.dart';
-import 'package:ui/pages/home/test_home.dart';
 import 'package:ui/pages/login/login.dart';
 import 'package:ui/pages/register/register.dart';
 
@@ -10,7 +9,8 @@ import 'package:ui/pages/register/register.dart';
 // const url = 'http://192.168.1.136:8000/';
 // const url = 'http://127.0.0.1:8888';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(
     const ProviderScope(
       child: App(),
@@ -31,7 +31,7 @@ class App extends ConsumerWidget {
         RegisterScreen.id: (context) => const RegisterScreen(),
         CreateProjectPage.id: (context) => const CreateProjectPage(),
       },
-      initialRoute: Home.id,
+      initialRoute: LoginScreen.id,
     );
   }
 }
