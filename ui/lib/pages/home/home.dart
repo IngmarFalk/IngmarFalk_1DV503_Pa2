@@ -22,7 +22,7 @@ class Home extends ConsumerWidget {
         body: Container(
           height: size.height,
           width: size.width,
-          color: kcIceBlue.withOpacity(.2),
+          color: kcIceBlue.withOpacity(1),
           child: Stack(
             children: <Widget>[
               Positioned(

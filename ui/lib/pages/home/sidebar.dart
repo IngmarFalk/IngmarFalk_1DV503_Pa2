@@ -81,7 +81,7 @@ class SideBarItem extends ConsumerWidget {
     this.width = 200,
     this.color = kcIceBlue,
     this.textColor = kcDarkBlue,
-    this.duration = const Duration(milliseconds: 200),
+    this.duration = const Duration(milliseconds: 0),
     this.accentColor,
     this.shadow = true,
     this.margin = 10,
@@ -107,18 +107,18 @@ class SideBarItem extends ConsumerWidget {
       width: width,
       padding: padding,
       decoration: BoxDecoration(
-        color: hovering.backgroundColor,
-        borderRadius: borderRadius,
-        boxShadow: shadow
-            ? [
-                BoxShadow(
-                  color: hovering.shadowColor,
-                  blurRadius: hovering.blurRadius,
-                  spreadRadius: hovering.shadowSpread,
-                )
-              ]
-            : [const BoxShadow(spreadRadius: 0, blurRadius: 0)],
-      ),
+          color: hovering.backgroundColor,
+          borderRadius: BorderRadius.circular(3) // borderRadius,
+          // boxShadow: shadow
+          //     ? [
+          //         BoxShadow(
+          //           color: hovering.shadowColor,
+          //           blurRadius: hovering.blurRadius,
+          //           spreadRadius: hovering.shadowSpread,
+          //         )
+          //       ]
+          //     : [const BoxShadow(spreadRadius: 0, blurRadius: 0)],
+          ),
       child: InkWell(
         onTap: onTap,
         onHover: (val) => hovering.onHover(val),
@@ -143,7 +143,7 @@ class SideBarItemChangeNotifier extends ChangeNotifier {
   Color _shadowColor = kcLightGrey;
   double _shadowSpread = .4;
   double _blur = .5;
-  Color _backgroundColor = Colors.white;
+  Color _backgroundColor = kcIceBlue;
   Color _textColor = kcDarkBlue.withOpacity(.9);
   bool get hovering => _hovering;
   Color get shadowColor => _shadowColor;
@@ -187,8 +187,8 @@ class SideBarItemChangeNotifier extends ChangeNotifier {
     shadowColor = val ? kcIceBlue : kcLightGrey.withOpacity(.5);
     shadowSpread = val ? .5 : .5;
     blurRadius = val ? .5 : 1.0;
-    backgroundColor = val ? kcMedBlue : Colors.white;
-    textColor = val ? Colors.white : kcDarkBlue.withOpacity(.9);
+    backgroundColor = val ? kcMedBlue.withOpacity(.2) : kcIceBlue;
+    textColor = val ? kcMedBlue : kcDarkBlue.withOpacity(1);
     notifyListeners();
   }
 }

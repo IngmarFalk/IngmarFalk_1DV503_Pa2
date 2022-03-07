@@ -228,7 +228,12 @@ class Table(Base):
             raise TooManyPrimaryKeysError(msg="A table can only have one primary key")
         return (
             f"CREATE TABLE IF NOT EXISTS {self.__repr__()} ("
-            + ", ".join([f"{k} {v.asSql()}" for k, v in self.columns.items()])
+            + ", ".join(
+                [
+                    f"{col_name} {col_type.asSql()}"
+                    for col_name, col_type in self.columns.items()
+                ]
+            )
             + ");"
         )
 
@@ -242,16 +247,32 @@ class Table(Base):
         )
         return True if primary_key_counter <= 1 else False
 
-    def get(self, *args) -> str:
-        "Unimplemented"  # TODO
-        return ""
+    def select(self, *args, condition: str = "") -> str:
+        """Takes in the colmns that should be returned as well as a Sql condition in string format"""
+        return "SELECT " + ", ".join(args) + f"FROM {self.__repr__(), condition}"
 
-    def insert(self, *args) -> str:
+    def insert(self, data: dict[str, Any]) -> str:
+        """Insert requires all the arguments to be passed into the insert method itself
+        as well as the 'csr.execute' method. But while the 'csr.execute' method only requires
+        the actual values to be inserted (as a list), the 'insert' method requires the column
+        on top of that. They have to be passed in as a dictionary.
+
+        e.g:
+
+        ...
+
+        db.query(t1.insert(**kwargs), args)
+
+        ...
+        """
         return (
             "INSERT INTO "
             + self.__repr__()
+            + "("
+            + ", ".join(data)
+            + ")"
             + " VALUES ("
-            + ", ".join(["%s" for _ in range(len(args))])
+            + ", ".join(["%s" for _ in range(len(data))])
             + ");"
         )
 
@@ -312,11 +333,6 @@ class Database(Base):
         return json.dumps(
             {table: table for table in self.tables}, indent=4, sort_keys=True
         )
-        # return (
-        #     "{\n    "
-        #     + ",\n    ".join(f'"{table}": ' + table for table in self.tables)
-        #     + "\n}"
-        # )
 
     def display(self) -> None:
         for table_name, table in self.tables.items():
@@ -325,7 +341,6 @@ class Database(Base):
                 print("\t", col, ":", col_val)
                 for type, keywords in col_val.attrs.items():
                     print("\t  ", type, ":", keywords)
-                    # TODO : still displays the class variables with underscores in fron of them
 
 
 "--------------------------------E X C E P T I O N S--------------------------------"

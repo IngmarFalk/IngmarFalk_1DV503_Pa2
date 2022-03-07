@@ -52,6 +52,10 @@ class DBManager:
             log.log(level=log.ERROR, msg=f"Connection failed: ")
             print("Error connecting to MySQL database: ", e)
 
+    def use(self) -> None:
+        "Executing the 'USER {DATABASE_NAME} query"
+        self.query("USE %s;" % self.db)
+
     def exists(self) -> bool | None:
         """Checking wether a database with the required name exists"""
         try:
@@ -63,7 +67,7 @@ class DBManager:
 
     def query(self, query: str, *params) -> None:
         """Takes in a Sql statement as well as the arguments it needs and tries to execute it."""
-        print(query)
+        print(query, params)
         try:
             log.info(
                 "Called query:\t"
@@ -75,7 +79,7 @@ class DBManager:
             )
 
             """ Executing query, storing results in query_result and committing changes. """
-            self.csr.execute(query, *params)
+            self.csr.execute(query, params)
             self.query_result = self.csr.fetchall()
             self.cnx.commit()
             log.info("Query executed:\t" + query)

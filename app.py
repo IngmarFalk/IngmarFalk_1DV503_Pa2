@@ -2,7 +2,7 @@ from models.base import *
 from db.db_manager import DBManager
 
 
-def main():
+def init_db() -> DBManager:
     login_data = {
         "user": "manu",
         "password": "manu",
@@ -14,8 +14,10 @@ def main():
         print("Does not exist")
         db.query(ProjM().asSql())
         db.query("USE " + repr(ProjM()))
-        for _, table in ProjM().tables.items():
+        for table in ProjM().tables.values():
             db.query(table.asSql())
+
+    return db
 
 
 class Users(Table):
@@ -77,4 +79,4 @@ class ProjM(Database):
 
 
 if __name__ == "__main__":
-    main()
+    init_db()
