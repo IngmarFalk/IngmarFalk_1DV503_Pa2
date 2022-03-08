@@ -77,12 +77,22 @@ class LoginForm extends HookWidget {
           String jsonData = json.encode(loginData);
           await _saveAndValidate();
 
-          await http.post(
+          var rs = await http.post(
             Uri.parse('http://127.0.0.1:8000/login/'),
             body: jsonData,
             headers: {"Content-type": "application/json"},
           );
-          Navigator.pop(context);
+
+          if (json.decode(rs.body)["msg"] == "") {
+            Navigator.pop(context);
+          } else {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return const LoginErrorPopUp();
+              },
+            );
+          }
         },
         text: "S I G N   I N", // "L O G I N"
       ),
@@ -130,10 +140,43 @@ class LoginForm extends HookWidget {
           const SizedBox(height: 40),
           ...buildLoginButtons(
             context: context,
-            loginData: {email.value: pw.value},
+            loginData: {"email": email.value, "password": pw.value},
           ),
         ],
       ),
+    );
+  }
+}
+
+class LoginErrorPopUp extends StatelessWidget {
+  const LoginErrorPopUp({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Login Failed!'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: const <Widget>[
+          Text('No such user exists.'),
+        ],
+      ),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: Text(
+            'Close',
+            style: TextStyle(
+              color: Theme.of(context).primaryColor,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
