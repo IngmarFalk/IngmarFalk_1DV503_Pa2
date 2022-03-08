@@ -3,7 +3,6 @@
 import json
 from typing import Any
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from models.base import Database, Table, Val, VARCHAR, INT, FLOAT, DOUBLE
 from app import init_db, ProjM
@@ -40,8 +39,8 @@ ROUTES = {
     "create_project": "/user/{username}/create_project/",
     "alter_project": "/user/{username}/alter_project/",
     "delete_project": "/user/{username}/delete_project/",
-    "create_org": "user/{username}/create_org",
-    "delete_org": "user/{username}/delete_org",
+    "create_org": "/user/{username}/create_org",
+    "delete_org": "/user/{username}/delete_org",
 }
 
 DB_MANAGER = init_db()
@@ -103,8 +102,10 @@ async def validate(login_data: dict[Any, Any]) -> str:
 
 @app.post(ROUTES["register"])
 async def register(register_data: dict[Any, Any]) -> dict[Any, Any]:
-    """TODO : implement a post request that takes in an email, username and password
-    and checks wether there is no duplicate in the database"""
+    """
+    TODO : implement a post request that takes in an email, username and password
+    and checks wether there is no duplicate in the database
+    """
 
     if len(register_data["password"]) < 8:
         return {"msg": "Password must be at least 8 characters"}
@@ -213,7 +214,7 @@ async def create_project(project_data: dict[Any, Any], username: str) -> dict[An
         DB_MANAGER.use()
         DB_MANAGER.query(ProjM().projects.insert(project_data), *project_data.values())
         DB_MANAGER.query(
-            ProjM().project_leaders.insert(
+            ProjM().projectleaders.insert(
                 {
                     "username": username,
                     "project": project_data["name"],
@@ -228,8 +229,17 @@ async def create_project(project_data: dict[Any, Any], username: str) -> dict[An
 
 
 @app.post(ROUTES["delete_project"])
-async def delete_project(project_data: dict[Any, Any]) -> dict[Any, Any]:
-    """"""
+async def delete_project(project_data: dict[Any, Any], username: str) -> dict[Any, Any]:
+    """
+    Takes in the information about the project to be deleted as well as
+    the user who initiated the action. Then it calls a query to check wether
+    the user has the authority to actually delete it, if so, the function will
+    call the appropriate query. After that this function will delete the project
+    itself as well as all the project_leaders for this particular project.
+    Furthermore it will alos remove all tasks for this project.
+    """
+    DB_MANAGER.use()
+    DB_MANAGER.query("SELECT * FROM ")
     return {}
 
 
@@ -251,7 +261,7 @@ async def check_for_org(org_data: dict[Any, Any]) -> bool:
 @app.post(ROUTES["create_org"])
 async def create_org(org_data: dict[Any, Any], username: str) -> dict[Any, Any]:
     """"""
-    if not check_for_org(org_data):
+    if not await check_for_org(org_data):
         DB_MANAGER.use()
         DB_MANAGER.query(ProjM().organizations.insert(org_data), *org_data.values())
         DB_MANAGER.query(
@@ -260,12 +270,79 @@ async def create_org(org_data: dict[Any, Any], username: str) -> dict[Any, Any]:
                     "username": username,
                     "organization": org_data["name"],
                 }
-            )
+            ),
+            *(username, org_data["name"]),
         )
     return {}
 
 
 @app.post(ROUTES["delete_org"])
-async def delete_org(org_data: dict[Any, Any]) -> dict[Any, Any]:
-    """"""
+async def delete_org(org_data: dict[Any, Any], username: str) -> dict[Any, Any]:
+    """
+    Deletes the organization together with all its projects and tasks, as well as
+    removes all of its admins, developers and project leaders as well as all tasks related to
+    the organization from the database. This is done of course after checking the
+    user authority. This action can only be performed by admins of the organization.
+    """
+    DB_MANAGER.use()
+
+    "! THIS IS JUST MY THOUGHT PROCESS !"
+
+    "IDEA: USE INNER JOINS"
+
+    dq = f"""
+    DELETE org, devs, admins, pls, pjs
+    FORM organizations as org
+    INNER JOIN projects as pjs ON org.name = pjs.organization
+    INNER JOIN projectleaders as pls ON pjs.id = pls.project_id
+    INNER JOIN tasks as pls ON pjs.id = pls.project_id
+    INNER JOIN admins ON org.name = admins.organization
+    WHERE org.name = '{org_data['name']};'
+    """
+
+    "So this works"
+    """
+    select *
+    from projects pjs 
+    inner join organizations orgs on pjs.organization = orgs.name 
+    inner join projectleaders pls on pjs.id = pls.project_id
+    INNER JOIN tasks ON pjs.id = pls.project_id 
+    where pjs.organization = 'VW';
+    """
+    """
+    INNER JOIN developers devs ON org.name = devs.organization
+    INNER JOIN admins ON org.name = admins.organization 
+    """
+
+    """
+    DELETE org, devs, admins, pls, pjs 
+    FROM organizations org 
+    INNER JOIN projects pjs ON org.name = pjs.organization 
+    INNER JOIN projectleaders pls ON pjs.id = pls.project_id 
+    INNER JOIN tasks ON pjs.id = pls.project_id 
+    INNER JOIN developers devs ON org.name = devs.organization
+    INNER JOIN admins ON org.name = admins.organization 
+    WHERE org.name = 'Google';
+    """
+
+    "----------------------"
+
+    "Step 1: Check wether the user has the authority to perform this action"
+    q1 = f"SELECT * FROM admins WHERE username = '{username}' AND organization = '{org_data['name']}'"
+    DB_MANAGER.query(q1)
+    if DB_MANAGER.query_result == 0:
+        return {"msg": "You dont have the authority to perform this action"}
+
+    "Step 2: Get all the organizations projects"
+    f"SELECT id FROM projects WHERE organization = '{org_data['name']}';"
+
+    "Step 3: Call 'delete_project' for for every item in the result."
+    if len(DB_MANAGER.query_result) > 0:
+        for project in DB_MANAGER.query_result:
+            await delete_project(
+                project_data={"id": project[0]},
+                username=username,
+            )
+
+    "Step 4: Delete all developers and admins"
     return {}

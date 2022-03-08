@@ -253,7 +253,7 @@ class Table(Base):
 
     def insert(self, data: dict[str, Any]) -> str:
         """Insert requires all the arguments to be passed into the insert method itself
-        as well as the 'csr.execute' method. But while the 'csr.execute' method only requires
+        as well as the 'db.query' method. But while the 'csr.execute' method only requires
         the actual values to be inserted (as a list), the 'insert' method requires the column
         on top of that. They have to be passed in as a dictionary.
 
@@ -261,7 +261,7 @@ class Table(Base):
 
         ...
 
-        db.query(t1.insert(**kwargs), args)
+        db.query(t1.insert(kwargs), *args)
 
         ...
         """
