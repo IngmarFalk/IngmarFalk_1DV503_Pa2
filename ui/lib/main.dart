@@ -26,11 +26,6 @@ class InheritedLoginProviderWrapper extends StatefulWidget {
     Key? key,
   }) : super(key: key);
 
-  // static _InheritedHomeWrapperState of(BuildContext context) {
-  //   print("returning InheritedHomeWrapper");
-  //   return context.dependOnInheritedWidgetOfExactType<InheritedHome>()!.data;
-  // }
-
   @override
   State<InheritedLoginProviderWrapper> createState() =>
       _InheritedLoginProviderWrapperState();
@@ -38,10 +33,10 @@ class InheritedLoginProviderWrapper extends StatefulWidget {
 
 class _InheritedLoginProviderWrapperState
     extends State<InheritedLoginProviderWrapper> {
+  // TODO : Add possibility to retrieve the account the user is logged in as
   bool isLoggedIn = false;
 
   void setIsLoggedIn(bool val) {
-    print("Got to setState");
     setState(() {
       isLoggedIn = val;
     });

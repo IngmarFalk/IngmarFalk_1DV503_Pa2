@@ -17,6 +17,8 @@ class CustomTextButton extends ConsumerWidget {
   final bool busy;
   final bool shadow;
   final double? scale;
+  final EdgeInsets? margin;
+  final Icon? icon;
 
   /// Required fields
   final String text;
@@ -26,6 +28,7 @@ class CustomTextButton extends ConsumerWidget {
     Key? key,
     required this.text,
     required this.onTap,
+    this.margin,
     this.border,
     this.borderRadius,
     this.borderWidth = 1,
@@ -41,6 +44,7 @@ class CustomTextButton extends ConsumerWidget {
     this.disabled = false,
     this.shadow = true,
     this.scale = .8,
+    this.icon,
   }) : super(key: key);
 
   final _colorProvider = ChangeNotifierProvider<ButtonColorChangeNotifier>(
@@ -53,7 +57,7 @@ class CustomTextButton extends ConsumerWidget {
     final color = ref.watch(_colorProvider);
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
+      margin: margin ?? const EdgeInsets.only(bottom: 10),
       child: Center(
         child: InkWell(
           mouseCursor: disabled
@@ -80,15 +84,16 @@ class CustomTextButton extends ConsumerWidget {
             ),
             child: busy
                 ? const CircularProgressIndicator()
-                : Text(
-                    text,
+                : icon ??
+                    Text(
+                      text,
 
-                    /// Text Color
-                    style: textStyle ??
-                        TextStyle(
-                          color: disabled ? kcLightGrey : color.color,
-                        ),
-                  ),
+                      /// Text Color
+                      style: textStyle ??
+                          TextStyle(
+                            color: disabled ? kcLightGrey : color.color,
+                          ),
+                    ),
           ),
         ),
       ),

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ui/pages/home/home.dart';
-import 'package:ui/pages/login/login_notifier.dart';
 import 'package:ui/pages/register/register.dart';
 import 'package:ui/theme/colors.dart';
 import 'package:ui/widgets/widgets.dart';
@@ -25,10 +24,12 @@ class LoginScreen extends ConsumerWidget {
               type: FormType.login,
               fields: {
                 "email": CustomTextField(
+                  autofillHints: AutofillHints.email,
                   hintText: "email",
                   prefixIcon: const Icon(Icons.email),
                 ),
                 "password": CustomTextField(
+                  autofillHints: AutofillHints.password,
                   hintText: "password",
                   prefixIcon: const Icon(Icons.key),
                   obscureText: true,

@@ -12,22 +12,18 @@ class CustomForm extends HookConsumerWidget {
   final FormType type;
   final Map<String, CustomTextField> fields;
   final List<String> urls;
-  final List<String> buttonTexts;
+  final List<String>? buttonTexts;
   final List<CustomTextButton>? buttons;
   CustomForm({
     Key? key,
     required this.type,
     required this.urls,
-    required this.buttonTexts,
+    this.buttonTexts,
     required this.fields,
     this.buttons,
   }) : super(key: key);
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
-  final _loginProvider = ChangeNotifierProvider<LoginNotifier>(
-    (ref) => LoginNotifier(),
-  );
 
   Future<void> _saveAndValidate() async {
     final valid = _formKey.currentState!.validate();
@@ -48,61 +44,63 @@ class CustomForm extends HookConsumerWidget {
   }
 
   List<Widget> buildLoginButtons({
-    required LoginNotifier lnNotifier,
     required BuildContext context,
     required Map<String?, String> data,
     required List<String> urls,
-    required List<String> texts,
+    required List<String>? texts,
     List<CustomTextButton>? buttons,
   }) {
-    return [
-      ...List.generate(
-        texts.length,
-        (idx) => CustomTextButton(
-          borderRadius: BorderRadius.circular(0),
-          onTap: () async {
-            String jsonData = json.encode(data);
-            await _saveAndValidate();
+    return texts != null
+        ? [
+            ...List.generate(
+              texts.length,
+              (idx) => CustomTextButton(
+                borderRadius: BorderRadius.circular(0),
+                onTap: () async {
+                  String jsonData = json.encode(data);
+                  await _saveAndValidate();
 
-            var resp = await http.post(
-              Uri.parse(urls[idx]),
-              body: jsonData,
-              headers: {"Content-type": "application/json"},
-            );
-            String msg = json.decode(resp.body)["msg"];
-
-            if (msg == "") {
-              if (type == FormType.login) {
-                InheritedLoginProvider.of(context).setIsLoggedIn(true);
-              }
-              Navigator.pop(context);
-            } else {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return ErrorPopUp(
-                    msg: msg,
+                  var resp = await http.post(
+                    Uri.parse(urls[idx]),
+                    body: jsonData,
+                    headers: {"Content-type": "application/json"},
                   );
+                  String msg = json.decode(resp.body)["msg"];
+
+                  if (msg == "") {
+                    if (type == FormType.login) {
+                      InheritedLoginProvider.of(context).setIsLoggedIn(true);
+                    }
+                    Navigator.pop(context);
+                  } else {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return ErrorPopUp(
+                          msg: msg,
+                        );
+                      },
+                    );
+                  }
                 },
-              );
-            }
-          },
-          text: texts[idx],
-        ),
-      ),
-      ...?buttons,
-      CustomTextButton(
-        text: "C A N C E L",
-        onTap: () {
-          Navigator.pop(context);
-        },
-      ),
-    ];
+                text: texts[idx],
+              ),
+            ),
+            ...?buttons,
+            CustomTextButton(
+              text: "C A N C E L",
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+          ]
+        : [
+            ...?buttons,
+          ];
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final loggedIn = ref.watch(_loginProvider);
     int nrc = fields.length;
     List<TextEditingController> _controllers = List.generate(
       nrc,
@@ -143,7 +141,6 @@ class CustomForm extends HookConsumerWidget {
           ),
           const SizedBox(height: 40),
           ...buildLoginButtons(
-            lnNotifier: loggedIn,
             texts: buttonTexts,
             urls: urls,
             context: context,

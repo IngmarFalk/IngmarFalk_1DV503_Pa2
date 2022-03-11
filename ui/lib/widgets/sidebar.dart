@@ -4,9 +4,7 @@ class SideBar extends ConsumerWidget {
   final double height;
   final double width;
   final Color color;
-  final LoginNotifier lnNotifier;
   SideBar({
-    required this.lnNotifier,
     this.color = kcIceBlue,
     this.height = double.infinity,
     this.width = 200,
@@ -20,16 +18,9 @@ class SideBar extends ConsumerWidget {
     "M E S S A G E S": () {},
   };
 
-  final _loginProvider = ChangeNotifierProvider<LoginNotifier>(
-    (ref) => LoginNotifier(),
-  );
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final loggedIn = ref.watch(_loginProvider);
-    print("State: ");
     final state = InheritedLoginProvider.of(context);
-    print("Did actually call InheritedHome.of(context)");
 
     return Container(
       margin: const EdgeInsets.all(10),
@@ -44,6 +35,17 @@ class SideBar extends ConsumerWidget {
         children: <Widget>[
           Column(
             children: [
+              const SizedBox(height: 10),
+              Center(
+                child: Text(
+                  "F I N D E R",
+                  style: GoogleFonts.montserrat(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
+                    color: kcDarkBlue,
+                  ),
+                ),
+              ),
               const SizedBox(height: 10),
               SideBarItem(
                 text: "O R G A N I Z A T I O N S",

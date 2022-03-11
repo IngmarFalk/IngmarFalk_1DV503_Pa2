@@ -9,7 +9,6 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ui/main.dart';
 import 'package:ui/pages/login/login.dart';
-import 'package:ui/pages/login/login_notifier.dart';
 import 'package:ui/theme/colors.dart';
 
 part 'custom_text_field.dart';

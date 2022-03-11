@@ -21,6 +21,7 @@ class RegisterScreen extends ConsumerWidget {
               type: FormType.register,
               fields: {
                 "username": CustomTextField(
+                  autofillHints: AutofillHints.username,
                   hintText: "username",
                   prefixIcon: const Icon(Icons.app_registration_sharp),
                 ),
@@ -33,10 +34,12 @@ class RegisterScreen extends ConsumerWidget {
                   prefixIcon: const Icon(Icons.person),
                 ),
                 "email": CustomTextField(
+                  autofillHints: AutofillHints.email,
                   hintText: "email",
                   prefixIcon: const Icon(Icons.email),
                 ),
                 "password": CustomTextField(
+                  autofillHints: AutofillHints.password,
                   hintText: "password",
                   prefixIcon: const Icon(Icons.key),
                   obscureText: true,

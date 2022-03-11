@@ -1,47 +1,227 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ui/pages/home/home.dart';
 import 'package:ui/theme/colors.dart';
 import 'package:ui/widgets/widgets.dart';
 
-class ProjectsView extends ConsumerWidget {
+class CenterView extends ConsumerWidget {
   final double height;
   final double width;
-  const ProjectsView({
+  CenterView({
     this.height = 500,
     this.width = 500,
     Key? key,
   }) : super(key: key);
 
+  final _filteringNotifier = ChangeNotifierProvider<FilterButtonNotifier>(
+    (ref) => FilterButtonNotifier(),
+  );
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // final TextEditingController _teController = useTextEditingController();
+    Size size = MediaQuery.of(context).size;
+    final filtering = ref.watch(_filteringNotifier);
+
     return Container(
       margin: const EdgeInsets.all(10),
       height: height,
       width: width,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
-        color: kcLightBlue,
+        // color: kcLightBlue,
       ),
       child: Stack(
-        children: const <Widget>[
-          ProjectTile(),
+        children: <Widget>[
+          Align(
+            alignment: Alignment.topLeft,
+            child: SizedBox(
+              height: 50,
+              child: Row(
+                children: [
+                  FilterButton(
+                    filteringNotifier: _filteringNotifier,
+                  ),
+                  SearchField(size: size),
+                ],
+              ),
+            ),
+          ),
+          filtering.filtering
+              ? Positioned(
+                  top: 50,
+                  left: 0,
+                  child: FilterOptions(
+                      filteringNotifier: _filteringNotifier,
+                      options: const [
+                        "Date",
+                        "Name",
+                        "Organization",
+                      ]),
+                )
+              : const SizedBox(),
+          const SearchButton(),
+          const CenterViewTile(),
         ],
       ),
     );
   }
 }
 
-class ProjectTile extends ConsumerWidget {
+class FilterButtonNotifier extends ChangeNotifier {
+  bool _filtering = false;
+
+  bool get filtering => _filtering;
+
+  set filtering(bool value) {
+    _filtering = value;
+    notifyListeners();
+  }
+
+  void onTap(bool val) {
+    _filtering = val;
+    notifyListeners();
+  }
+}
+
+class FilterButton extends ConsumerWidget {
+  final ChangeNotifierProvider<FilterButtonNotifier> filteringNotifier;
+  const FilterButton({
+    required this.filteringNotifier,
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final filtering = ref.watch(filteringNotifier);
+    return CustomTextButton(
+      margin: const EdgeInsets.all(0),
+      height: 90,
+      width: 60,
+      onTap: () {
+        filtering.onTap(!filtering.filtering);
+      },
+      text: "",
+      icon: const Icon(
+        Icons.menu_sharp,
+        color: kcDarkBlue,
+      ),
+    );
+  }
+}
+
+class FilterOptions extends ConsumerWidget {
+  final ChangeNotifierProvider<FilterButtonNotifier> filteringNotifier;
+  final List<String> options;
+  const FilterOptions({
+    required this.filteringNotifier,
+    required this.options,
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final filtering = ref.watch(filteringNotifier);
+    return SizedBox(
+      height: options.length * 34,
+      width: 200,
+      child: ListView.builder(
+        itemCount: options.length,
+        scrollDirection: Axis.vertical,
+        itemBuilder: (BuildContext context, int idx) => Container(
+          // margin: const EdgeInsets.symmetric(vertical: 1),
+          height: 30,
+          width: 200,
+          decoration: const BoxDecoration(
+            border: Border(
+              bottom: BorderSide(color: kcMedBlue, width: .5),
+              right: BorderSide(color: kcMedBlue, width: .5),
+              left: BorderSide(color: kcMedBlue, width: .5),
+            ),
+            color: Colors.white,
+          ),
+          child: TextButton(
+            onPressed: () {
+              filtering.onTap(false);
+            },
+            child: Text(options[idx],
+                style: GoogleFonts.montserrat(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: kcDarkBlue,
+                )),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class SearchField extends StatelessWidget {
+  const SearchField({
+    Key? key,
+    required this.size,
+  }) : super(key: key);
+
+  final Size size;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        border: Border.symmetric(
+          horizontal: BorderSide(width: 1.0, color: kcMedBlue),
+        ),
+      ),
+      child: Form(
+        child: CustomTextField(
+          margin: const EdgeInsets.all(0),
+          hintText: "search",
+          isShadow: false,
+          height: 50,
+          width: size.width - 700,
+        ),
+        onChanged: () {},
+      ),
+    );
+  }
+}
+
+class SearchButton extends StatelessWidget {
+  const SearchButton({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.topRight,
+      child: SizedBox(
+        height: 50,
+        width: 200,
+        child: CustomTextButton(
+          height: 70,
+          width: 300,
+          margin: const EdgeInsets.all(0),
+          onTap: () {},
+          text: "S E A R C H",
+        ),
+      ),
+    );
+  }
+}
+
+class CenterViewTile extends ConsumerWidget {
   final List<Project>? projects;
   final double height;
   final double width;
   final EdgeInsets? padding, margin;
   final Color textColor, backgroundColor;
   final Color? accentColor;
-  const ProjectTile({
+  const CenterViewTile({
     this.projects,
     this.height = 50,
     this.width = 500,
@@ -55,16 +235,16 @@ class ProjectTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return const CreatePrjectButton();
+    return const CreateButton();
   }
 }
 
-class CreatePrjectButton extends ConsumerWidget {
+class CreateButton extends ConsumerWidget {
   final Duration duration;
   final Color backgroundColor;
   final EdgeInsets padding;
   final BorderRadius? borderRadius;
-  const CreatePrjectButton({
+  const CreateButton({
     Key? key,
     this.duration = const Duration(milliseconds: 200),
     this.backgroundColor = kcIceBlue,
@@ -89,7 +269,6 @@ class CreatePrjectButton extends ConsumerWidget {
               padding: padding,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(5),
-                color: backgroundColor.withOpacity(.3),
               ),
               child: const Icon(Icons.add_box),
             ),

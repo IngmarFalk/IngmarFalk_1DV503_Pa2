@@ -17,7 +17,7 @@ class CustomTextField extends ConsumerWidget {
   final TextBaseline? textBaseline;
   final TextStyle? textStyle;
   final InputDecoration? inputDecoration;
-  final AutofillHints? autofillHints;
+  final String? autofillHints;
   final FontStyle? fontStyle;
   final FontWeight? fontWeight;
   final double? fontSize;
@@ -139,12 +139,14 @@ class CustomTextField extends ConsumerWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
-                PrefixIconWidget(
-                  prefixIcon: prefixIcon,
-                  status: status,
-                  backgroundColor: backgroundColor,
-                  accentColor: accentColor,
-                ),
+                prefixIcon != null
+                    ? PrefixIconWidget(
+                        prefixIcon: prefixIcon,
+                        status: status,
+                        backgroundColor: backgroundColor,
+                        accentColor: accentColor,
+                      )
+                    : const SizedBox(width: 20),
                 Expanded(
                   flex: 5,
                   child: Container(
@@ -188,10 +190,7 @@ class CustomTextField extends ConsumerWidget {
                               ? null
                               : "Password should be 8 character long",
                       textInputAction: TextInputAction.next,
-                      autofillHints: const [
-                        AutofillHints.email,
-                        AutofillHints.password
-                      ],
+                      autofillHints: [autofillHints ?? ""],
                       decoration: inputDecoration ??
                           InputDecoration(
                             hintStyle: TextStyle(

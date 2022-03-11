@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ui/pages/home/projects_view.dart';
-import 'package:ui/pages/login/login_notifier.dart';
 import 'package:ui/theme/colors.dart';
 import 'package:ui/widgets/widgets.dart';
 
@@ -13,14 +12,9 @@ class Home extends ConsumerWidget {
   static const String id = "/";
   Home({Key? key}) : super(key: key);
 
-  final _loginProvider = ChangeNotifierProvider<LoginNotifier>(
-    (ref) => LoginNotifier(),
-  );
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     Size size = MediaQuery.of(context).size;
-    final loggedIn = ref.watch(_loginProvider);
 
     return SafeArea(
       child: Scaffold(
@@ -47,13 +41,12 @@ class Home extends ConsumerWidget {
                   color: kcIceBlue.withOpacity(.1),
                   width: sideBarWidth,
                   height: size.height - navBarHeight - margin * 3,
-                  lnNotifier: loggedIn,
                 ),
               ),
               Positioned(
                 bottom: 0,
                 right: sideBarWidth + margin,
-                child: ProjectsView(
+                child: CenterView(
                   width: size.width - (sideBarWidth + margin * 3) * 2,
                   height: size.height - navBarHeight - margin * 3,
                 ),
