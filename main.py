@@ -51,7 +51,16 @@ DB_MANAGER = init_db()
 async def check_for_user(user_data: dict[Any, Any]) -> bool:
     """Check if there exists a user with the provided credentials and returns a boolean"""
     DB_MANAGER.use()
-    DB_MANAGER.query(f"SELECT * FROM users WHERE email = '{user_data['email']}'")
+    DB_MANAGER.query(
+        f"""
+SELECT * 
+FROM users 
+WHERE email = '{user_data['email']}' 
+AND username IN (
+    SELECT username 
+    FROM users 
+    WHERE email = '{user_data['email']}');"""
+    )
 
     """
     If there is a result, that means there is a user with the provided credentials,

@@ -1,19 +1,33 @@
 part of widgets;
 
-class CreateProjectForm extends HookWidget {
+enum FormType {
+  login,
+  register,
+  createProject,
+  createOrganization,
+  search,
+}
+
+class CustomForm extends HookConsumerWidget {
+  final FormType type;
   final Map<String, CustomTextField> fields;
   final List<String> urls;
   final List<String> buttonTexts;
   final List<CustomTextButton>? buttons;
-  CreateProjectForm({
+  CustomForm({
+    Key? key,
+    required this.type,
     required this.urls,
     required this.buttonTexts,
     required this.fields,
     this.buttons,
-    Key? key,
   }) : super(key: key);
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  final _loginProvider = ChangeNotifierProvider<LoginNotifier>(
+    (ref) => LoginNotifier(),
+  );
 
   Future<void> _saveAndValidate() async {
     final valid = _formKey.currentState!.validate();
@@ -34,6 +48,7 @@ class CreateProjectForm extends HookWidget {
   }
 
   List<Widget> buildLoginButtons({
+    required LoginNotifier lnNotifier,
     required BuildContext context,
     required Map<String?, String> data,
     required List<String> urls,
@@ -49,26 +64,45 @@ class CreateProjectForm extends HookWidget {
             String jsonData = json.encode(data);
             await _saveAndValidate();
 
-            await http.post(
+            var resp = await http.post(
               Uri.parse(urls[idx]),
               body: jsonData,
               headers: {"Content-type": "application/json"},
             );
+            String msg = json.decode(resp.body)["msg"];
 
-            // TODO : Implement a check in python that validates the input
-            // TODO : and returns a boolean if the process was successful.
-            // If validation is successful, it should navigate to the home page.
-            Navigator.pop(context);
+            if (msg == "") {
+              if (type == FormType.login) {
+                InheritedLoginProvider.of(context).setIsLoggedIn(true);
+              }
+              Navigator.pop(context);
+            } else {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return ErrorPopUp(
+                    msg: msg,
+                  );
+                },
+              );
+            }
           },
           text: texts[idx],
         ),
       ),
       ...?buttons,
+      CustomTextButton(
+        text: "C A N C E L",
+        onTap: () {
+          Navigator.pop(context);
+        },
+      ),
     ];
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final loggedIn = ref.watch(_loginProvider);
     int nrc = fields.length;
     List<TextEditingController> _controllers = List.generate(
       nrc,
@@ -109,13 +143,51 @@ class CreateProjectForm extends HookWidget {
           ),
           const SizedBox(height: 40),
           ...buildLoginButtons(
+            lnNotifier: loggedIn,
             texts: buttonTexts,
             urls: urls,
             context: context,
             data: data,
+            buttons: buttons,
           ),
         ],
       ),
+    );
+  }
+}
+
+class ErrorPopUp extends StatelessWidget {
+  final String msg;
+
+  const ErrorPopUp({
+    required this.msg,
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      // title: const Text('Login Failed!'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(msg),
+        ],
+      ),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: Text(
+            'Close',
+            style: TextStyle(
+              color: Theme.of(context).primaryColor,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -1,13 +1,13 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ui/theme/colors.dart';
+part of widgets;
 
 class NavBar extends ConsumerWidget {
+  final String pageName;
   final double height;
   final double width;
   final Color color;
 
   const NavBar({
+    required this.pageName,
     this.color = const Color(0xFF009dae),
     this.height = 100,
     this.width = double.infinity,
@@ -24,6 +24,18 @@ class NavBar extends ConsumerWidget {
       decoration: BoxDecoration(
         color: color,
         borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: <Widget>[
+          Text(
+            pageName,
+            style: GoogleFonts.montserrat(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
       ),
     );
   }

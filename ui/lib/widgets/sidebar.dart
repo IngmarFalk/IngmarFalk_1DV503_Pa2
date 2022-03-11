@@ -1,29 +1,36 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:ui/theme/colors.dart';
-import 'package:ui/widgets/widgets.dart';
+part of widgets;
 
 class SideBar extends ConsumerWidget {
   final double height;
   final double width;
   final Color color;
+  final LoginNotifier lnNotifier;
   SideBar({
+    required this.lnNotifier,
     this.color = kcIceBlue,
     this.height = double.infinity,
     this.width = 200,
     Key? key,
   }) : super(key: key);
 
-  Map<String, Function> sideBarItems = {
+  final Map<String, Function> sideBarItems = {
     "O R G A N I Z A T I O N S": () {},
     "P R O J E C T S": () {},
     "T A S K S": () {},
     "M E S S A G E S": () {},
   };
 
+  final _loginProvider = ChangeNotifierProvider<LoginNotifier>(
+    (ref) => LoginNotifier(),
+  );
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final loggedIn = ref.watch(_loginProvider);
+    print("State: ");
+    final state = InheritedLoginProvider.of(context);
+    print("Did actually call InheritedHome.of(context)");
+
     return Container(
       margin: const EdgeInsets.all(10),
       height: height,
@@ -33,24 +40,42 @@ class SideBar extends ConsumerWidget {
         color: color,
       ),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
-          const SizedBox(height: 10),
-          SideBarItem(
-            text: "O R G A N I Z A T I O N S",
-            onTap: () {},
+          Column(
+            children: [
+              const SizedBox(height: 10),
+              SideBarItem(
+                text: "O R G A N I Z A T I O N S",
+                onTap: () {},
+              ),
+              SideBarItem(
+                text: "P R O J E C T S",
+                onTap: () {},
+              ),
+              SideBarItem(
+                text: "T A S K S",
+                onTap: () {},
+              ),
+              SideBarItem(
+                text: "M E S S A G E S",
+                onTap: () {},
+              ),
+            ],
           ),
-          SideBarItem(
-            text: "P R O J E C T S",
-            onTap: () {},
-          ),
-          SideBarItem(
-            text: "T A S K S",
-            onTap: () {},
-          ),
-          SideBarItem(
-            text: "M E S S A G E S",
-            onTap: () {},
-          ),
+          Column(children: <Widget>[
+            SideBarItem(
+              text: state.isLoggedIn ? "S I G N   O U T" : "S I G N   I N",
+              onTap: () {
+                if (state.isLoggedIn) {
+                  state.setIsLoggedIn(false);
+                  Navigator.pop(context);
+                } else {
+                  Navigator.pushNamed(context, LoginScreen.id);
+                }
+              },
+            ),
+          ]),
         ],
       ),
     );
@@ -109,15 +134,6 @@ class SideBarItem extends ConsumerWidget {
       decoration: BoxDecoration(
           color: hovering.backgroundColor,
           borderRadius: BorderRadius.circular(3) // borderRadius,
-          // boxShadow: shadow
-          //     ? [
-          //         BoxShadow(
-          //           color: hovering.shadowColor,
-          //           blurRadius: hovering.blurRadius,
-          //           spreadRadius: hovering.shadowSpread,
-          //         )
-          //       ]
-          //     : [const BoxShadow(spreadRadius: 0, blurRadius: 0)],
           ),
       child: InkWell(
         onTap: onTap,
@@ -140,35 +156,14 @@ class SideBarItem extends ConsumerWidget {
 
 class SideBarItemChangeNotifier extends ChangeNotifier {
   bool _hovering = false;
-  Color _shadowColor = kcLightGrey;
-  double _shadowSpread = .4;
-  double _blur = .5;
   Color _backgroundColor = kcIceBlue;
   Color _textColor = kcDarkBlue.withOpacity(.9);
   bool get hovering => _hovering;
-  Color get shadowColor => _shadowColor;
-  double get shadowSpread => _shadowSpread;
-  double get blurRadius => _blur;
   Color get backgroundColor => _backgroundColor;
   Color get textColor => _textColor;
 
   set hovering(bool val) {
     _hovering = val;
-    notifyListeners();
-  }
-
-  set shadowColor(Color newShadowColor) {
-    _shadowColor = newShadowColor;
-    notifyListeners();
-  }
-
-  set shadowSpread(double newSpread) {
-    _shadowSpread = newSpread;
-    notifyListeners();
-  }
-
-  set blurRadius(double newBlur) {
-    _blur = newBlur;
     notifyListeners();
   }
 
@@ -184,11 +179,8 @@ class SideBarItemChangeNotifier extends ChangeNotifier {
 
   void onHover(bool val) {
     hovering = val;
-    shadowColor = val ? kcIceBlue : kcLightGrey.withOpacity(.5);
-    shadowSpread = val ? .5 : .5;
-    blurRadius = val ? .5 : 1.0;
-    backgroundColor = val ? kcMedBlue.withOpacity(.2) : kcIceBlue;
-    textColor = val ? kcMedBlue : kcDarkBlue.withOpacity(1);
+    backgroundColor = val ? kcLightBlue.withOpacity(.3) : kcIceBlue;
+    textColor = val ? kcDarkBlue : kcDarkBlue.withOpacity(1);
     notifyListeners();
   }
 }

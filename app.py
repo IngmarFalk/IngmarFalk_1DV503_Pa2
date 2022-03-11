@@ -19,54 +19,54 @@ def init_db() -> DBManager:
         for table in ProjM().tables.values():
             db.query(table.asSql())
 
-    " TODO : Create roles "
+        " TODO : Create roles "
 
-    for proj in td.tprojects:
-        db.query(ProjM().projects.insert(proj), *proj.values())
+        for proj in td.tprojects:
+            db.query(ProjM().projects.insert(proj), *proj.values())
 
-    for usr in td.tusers:
-        db.query(ProjM().users.insert(usr), *usr.values())
+        for usr in td.tusers:
+            db.query(ProjM().users.insert(usr), *usr.values())
 
-    for org in td.torgs:
-        db.query(ProjM().organizations.insert(org), *org.values())
+        for org in td.torgs:
+            db.query(ProjM().organizations.insert(org), *org.values())
 
-    for admin in td.tusers[:4]:
-        db.query(
-            ProjM().admins.insert(
-                {
-                    "username": "",
-                    "organization": "",
-                }
-            ),
-            *(admin["username"], rd.choice(td.torgs)["name"])
-        )
-
-    for pl in td.tusers[:6]:
-        db.query(
-            ProjM().projectleaders.insert(
-                {
-                    "username": "",
-                    "project_id": "",
-                    "organization": "",
-                }
-            ),
-            *(
-                pl["username"],
-                rd.choice(td.tprojects)["id"],
-                rd.choice(td.torgs)["name"],
+        for admin in td.tusers[:4]:
+            db.query(
+                ProjM().admins.insert(
+                    {
+                        "username": "",
+                        "organization": "",
+                    }
+                ),
+                *(admin["username"], rd.choice(td.torgs)["name"])
             )
-        )
 
-    for dev in td.tusers[6:]:
-        db.query(
-            ProjM().developers.insert(
-                {
-                    "username": "",
-                    "organization": "",
-                }
-            ),
-            *(dev["username"], rd.choice(td.torgs)["name"])
-        )
+        for pl in td.tusers[:6]:
+            db.query(
+                ProjM().projectleaders.insert(
+                    {
+                        "username": "",
+                        "project_id": "",
+                        "organization": "",
+                    }
+                ),
+                *(
+                    pl["username"],
+                    rd.choice(td.tprojects)["id"],
+                    rd.choice(td.torgs)["name"],
+                )
+            )
+
+        for dev in td.tusers[6:]:
+            db.query(
+                ProjM().developers.insert(
+                    {
+                        "username": "",
+                        "organization": "",
+                    }
+                ),
+                *(dev["username"], rd.choice(td.torgs)["name"])
+            )
 
     return db
 
