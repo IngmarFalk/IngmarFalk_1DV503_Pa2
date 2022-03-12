@@ -57,9 +57,33 @@ class CenterView extends ConsumerWidget {
                   child: FilterOptions(
                       filteringNotifier: _filteringNotifier,
                       options: const [
-                        "Date",
-                        "Name",
-                        "Organization",
+                        {
+                          "name": "Creation Date",
+                          "options": [
+                            "last 30 days",
+                            "last 3 months",
+                            "last 6 months",
+                            "last year",
+                            "all time"
+                          ]
+                        },
+                        {
+                          "name": "Status",
+                          "options": [
+                            "active",
+                            "production",
+                            "planning",
+                            "development"
+                          ]
+                        },
+                        {
+                          "name": "Field",
+                          "options": [
+                            "tech",
+                            "car",
+                            "entertainment",
+                          ]
+                        },
                       ]),
                 )
               : const SizedBox(),
@@ -73,16 +97,35 @@ class CenterView extends ConsumerWidget {
 
 class FilterButtonNotifier extends ChangeNotifier {
   bool _filtering = false;
+  bool _selecting = false;
+  String? _dropDownVal = "";
 
   bool get filtering => _filtering;
+  bool get selecting => _selecting;
+  String? get dropDownVal => _dropDownVal;
 
   set filtering(bool value) {
     _filtering = value;
     notifyListeners();
   }
 
-  void onTap(bool val) {
+  set selecting(bool val) {
+    _selecting = val;
+    notifyListeners();
+  }
+
+  void setDropDown(String? val) {
+    _dropDownVal = val;
+    notifyListeners();
+  }
+
+  void onTopicTap(bool val) {
     _filtering = val;
+    notifyListeners();
+  }
+
+  void onSpecificTap(bool val) {
+    _selecting = val;
     notifyListeners();
   }
 }
@@ -102,7 +145,7 @@ class FilterButton extends ConsumerWidget {
       height: 90,
       width: 60,
       onTap: () {
-        filtering.onTap(!filtering.filtering);
+        filtering.onTopicTap(!filtering.filtering);
       },
       text: "",
       icon: const Icon(
@@ -115,9 +158,7 @@ class FilterButton extends ConsumerWidget {
 
 class FilterOptions extends ConsumerWidget {
   final ChangeNotifierProvider<FilterButtonNotifier> filteringNotifier;
-  // TODO : Change it to map, so I can use it to create
-  // TODO : dropdownmenus for each filter option
-  final List<String> options;
+  final List<Map<String, dynamic>> options;
   const FilterOptions({
     required this.filteringNotifier,
     required this.options,
@@ -129,14 +170,13 @@ class FilterOptions extends ConsumerWidget {
     final filtering = ref.watch(filteringNotifier);
     return SizedBox(
       height: options.length * 34,
-      width: 200,
+      width: 400,
       child: ListView.builder(
         itemCount: options.length,
         scrollDirection: Axis.vertical,
         itemBuilder: (BuildContext context, int idx) => Container(
-          // margin: const EdgeInsets.symmetric(vertical: 1),
           height: 30,
-          width: 200,
+          width: 400,
           decoration: const BoxDecoration(
             border: Border(
               bottom: BorderSide(color: kcMedBlue, width: .5),
@@ -145,16 +185,99 @@ class FilterOptions extends ConsumerWidget {
             ),
             color: Colors.white,
           ),
-          child: TextButton(
-            onPressed: () {
-              filtering.onTap(false);
-            },
-            child: Text(options[idx],
-                style: GoogleFonts.montserrat(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: kcDarkBlue,
-                )),
+          child: Row(
+            children: [
+              SizedBox(
+                height: 29.5,
+                width: 200,
+                child: TextButton(
+                  onPressed: () {
+                    filtering.onSpecificTap(!filtering.selecting);
+                  },
+                  child: Text(
+                    options[idx]["name"],
+                    style: GoogleFonts.montserrat(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: kcDarkBlue,
+                    ),
+                  ),
+                ),
+              ),
+
+              SizedBox(
+                height: 20,
+                width: 140,
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton(
+                    value: options[idx]["options"][0].toString(),
+                    isExpanded: true,
+                    alignment: Alignment.center,
+                    elevation: 16,
+                    style: const TextStyle(color: kcDarkBlue),
+                    onChanged: (String? newValue) {
+                      filtering.setDropDown(newValue);
+                      filtering.onTopicTap(false);
+                    },
+                    items: options[idx]["options"]
+                        .map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(
+                          value,
+                          style: GoogleFonts.montserrat(
+                            fontSize: 14,
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              )
+              // filtering.selecting
+              //     ? Container(
+              //         margin: const EdgeInsets.only(top: 10),
+              //         height: options[idx]["options"].length * 20,
+              //         width: 200,
+              //         color: kcMedBlue,
+              // child: ListView.builder(
+              //   itemCount: options[idx]["options"].length,
+              //   itemBuilder: (BuildContext context, int jdx) {
+              //     return Container(
+              //       margin: const EdgeInsets.only(
+              //         left: 10,
+              //         top: 1,
+              //         bottom: 1,
+              //       ),
+              //       height: 30,
+              //       width: 200,
+              //       decoration: const BoxDecoration(
+              //         border: Border(
+              //           bottom: BorderSide(color: kcMedBlue, width: .5),
+              //           right: BorderSide(color: kcMedBlue, width: .5),
+              //           left: BorderSide(color: kcMedBlue, width: .5),
+              //         ),
+              //         color: Colors.white,
+              //       ),
+              //       child: TextButton(
+              //         onPressed: () {
+              //           filtering.onTopicTap(false);
+              //         },
+              //         child: Text(
+              //           options[idx]["name"],
+              //           style: GoogleFonts.montserrat(
+              //             fontSize: 14,
+              //             fontWeight: FontWeight.bold,
+              //             color: kcDarkBlue,
+              //           ),
+              //         ),
+              //       ),
+              //     );
+              //   },
+              // ),
+              //   )
+              // : const SizedBox(),
+            ],
           ),
         ),
       ),
