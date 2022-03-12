@@ -39,8 +39,10 @@ ROUTES = {
     "create_project": "/user/{username}/create_project/",
     "alter_project": "/user/{username}/alter_project/",
     "delete_project": "/user/{username}/delete_project/",
+    "get_projects": "/projects/",
     "create_org": "/user/{username}/create_org",
     "delete_org": "/user/{username}/delete_org",
+    "get_orgs": "/orgs/",
 }
 
 DB_MANAGER = init_db()
@@ -191,6 +193,55 @@ async def delete_user(user_data: dict[Any, Any], tables: list[str]) -> str:
 
 
 "++++++++++++++++++++Project Table Apis+++++++++++++++++++"
+
+
+@app.post(ROUTES["get_projects"])
+async def get_projects(project_name: dict[str, Any]) -> dict[str, Any]:
+    """
+    What do I need for projects:
+        Organization
+        Name
+        Description
+        nr of developers
+        due date
+        creation date
+        status
+    """
+    await create_all_projects_view()
+    DB_MANAGER.use()
+    DB_MANAGER.query(
+        f"""
+    SELECT * 
+    FROM all_projects 
+    WHERE name LIKE '{project_name['project_name']}%';"""
+    )
+
+    for row in DB_MANAGER.query_result:
+        for item in row:
+            print(item, end=" | ")
+        print("\n", "-" * 80, end="\n|")
+
+    return {"msg": DB_MANAGER.query_result}
+
+
+async def create_all_projects_view() -> None:
+    """Create a view of all the projects within the database"""
+    DB_MANAGER.use()
+    q = """CREATE VIEW all_projects 
+    AS SELECT 
+        id, 
+        name, 
+        description, 
+        due_date, 
+        creation_date, 
+        status, 
+        (SELECT COUNT(*) 
+            FROM developers 
+            WHERE developers.project_id = projects.id) 
+        FROM projects 
+        LEFT JOIN developers devs 
+        ON devs.project_id = projects.id;"""
+    DB_MANAGER.query(q)
 
 
 async def check_for_project(project_data: dict[Any, Any]) -> bool:
@@ -355,3 +406,19 @@ async def delete_org(org_data: dict[Any, Any], username: str) -> dict[Any, Any]:
 
     "Step 4: Delete all developers and admins"
     return {}
+
+
+@app.post(ROUTES["get_orgs"])
+async def get_orgs(filter: dict[str, str]):
+    """Gets all the organizations that fit the given filter, if none, returns all"""
+
+    DB_MANAGER.use()
+    DB_MANAGER.query(
+        "SELECT * FROM organizations;"
+        # + f" WHERE {filter['condition']} GROUP BY {filter['column']} ORDER BY {filter['column']};"
+        # if filter
+        # else ";"
+    )
+    print(DB_MANAGER.query_result)
+
+    return DB_MANAGER.query_result

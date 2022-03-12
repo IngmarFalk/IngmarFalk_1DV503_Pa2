@@ -115,6 +115,8 @@ class FilterButton extends ConsumerWidget {
 
 class FilterOptions extends ConsumerWidget {
   final ChangeNotifierProvider<FilterButtonNotifier> filteringNotifier;
+  // TODO : Change it to map, so I can use it to create
+  // TODO : dropdownmenus for each filter option
   final List<String> options;
   const FilterOptions({
     required this.filteringNotifier,

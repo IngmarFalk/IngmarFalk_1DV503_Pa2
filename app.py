@@ -62,10 +62,10 @@ def init_db() -> DBManager:
                 ProjM().developers.insert(
                     {
                         "username": "",
-                        "organization": "",
+                        "project_id": "",
                     }
                 ),
-                *(dev["username"], rd.choice(td.torgs)["name"])
+                *(dev["username"], rd.choice(td.tprojects)["id"])
             )
 
     return db
@@ -85,6 +85,7 @@ class Projects(Table):
     organization: VARCHAR = VARCHAR(size=255, nullable=True)
     description: TEXT = TEXT(nullable=True)
     due_date: DATETIME = DATETIME(nullable=True)
+    creation_date: DATETIME = DATETIME(nullable=True)
     status: VARCHAR = VARCHAR(size=255)
 
 
@@ -101,6 +102,8 @@ class Tasks(Table):
 
 class Organizations(Table):
     name: VARCHAR = VARCHAR(size=255)
+    field: VARCHAR = VARCHAR(size=255)
+    description: TEXT = TEXT(nullable=True)
 
 
 class Admins(Table):
@@ -110,7 +113,7 @@ class Admins(Table):
 
 class Developers(Table):
     username: VARCHAR = VARCHAR(size=255)
-    organization: VARCHAR = VARCHAR(size=255)
+    project_id: INT = INT()
 
 
 class ProjectLeaders(Table):

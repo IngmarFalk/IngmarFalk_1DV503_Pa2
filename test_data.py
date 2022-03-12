@@ -1,4 +1,5 @@
 from typing import Any
+import datetime as dt
 
 
 tusers: list[dict[str, Any]] = [
@@ -82,17 +83,17 @@ tusers: list[dict[str, Any]] = [
 ]
 
 torgs: list[dict[str, Any]] = [
-    {"name": "Apple"},
-    {"name": "Microsoft"},
-    {"name": "Amazon"},
-    {"name": "BMW"},
-    {"name": "VW"},
-    {"name": "Tesla"},
-    {"name": "Spotify"},
-    {"name": "Netflix"},
-    {"name": "Google"},
-    {"name": "Samsung"},
-    {"name": "Gazprom"},
+    {"name": "Apple", "field": "tech", "description": "Apple"},
+    {"name": "Microsoft", "field": "tech", "description": "Microsoft"},
+    {"name": "Amazon", "field": "tech", "description": "Amazon"},
+    {"name": "BMW", "field": "car", "description": "BMW"},
+    {"name": "VW", "field": "car", "description": "VW"},
+    {"name": "Tesla", "field": "tech", "description": "Tesla"},
+    {"name": "Spotify", "field": "music", "description": "Spotify"},
+    {"name": "Netflix", "field": "entertainment", "description": "Netflix"},
+    {"name": "Google", "field": "tech", "description": "Google"},
+    {"name": "Samsung", "field": "tech", "description": "Samsung"},
+    {"name": "Gazprom", "field": "gas & oil", "description": "Gazprom"},
 ]
 
 tprojects: list[dict[str, Any]] = [
@@ -101,48 +102,56 @@ tprojects: list[dict[str, Any]] = [
         "name": "GoogleProject1",
         "organization": "Google",
         "status": "initial",
+        "creation_date": dt.datetime.now(),
     },
     {
         "id": 2,
         "name": "GoogleProject2",
         "organization": "Google",
         "status": "finishing_stage",
+        "creation_date": dt.datetime.now(),
     },
     {
         "id": 3,
         "name": "GoogleProject3",
         "organization": "Google",
         "status": "production",
+        "creation_date": dt.datetime.now(),
     },
     {
         "id": 4,
         "name": "AmazonProject1",
         "organization": "Amazon",
         "status": "production",
+        "creation_date": dt.datetime.now(),
     },
     {
         "id": 5,
         "name": "AmazonProject2",
         "organization": "Amazon",
         "status": "planning",
+        "creation_date": dt.datetime.now(),
     },
     {
         "id": 6,
         "name": "AmazonProject3",
         "organization": "Amazon",
         "status": "development",
+        "creation_date": dt.datetime.now(),
     },
     {
         "id": 7,
         "name": "VWProject1",
         "organization": "VW",
         "status": "development",
+        "creation_date": dt.datetime.now(),
     },
     {
         "id": 8,
         "name": "VWProject2",
         "organization": "VW",
         "status": "production",
+        "creation_date": dt.datetime.now(),
     },
 ]
 

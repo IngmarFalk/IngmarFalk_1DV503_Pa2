@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:ui/pages/finder/finde.dart';
 import 'package:ui/pages/home/home.dart';
 import 'package:ui/pages/home/projects_view.dart';
 import 'package:ui/pages/login/login.dart';
@@ -86,7 +85,6 @@ class App extends ConsumerWidget {
         debugShowCheckedModeBanner: false,
         routes: {
           Home.id: (context) => Home(),
-          FinderScreen.id: (context) => const FinderScreen(),
           LoginScreen.id: (context) => const LoginScreen(),
           RegisterScreen.id: (context) => const RegisterScreen(),
           CreateProjectPage.id: (context) => const CreateProjectPage(),
