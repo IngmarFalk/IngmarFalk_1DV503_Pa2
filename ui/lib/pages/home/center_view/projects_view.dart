@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:ui/pages/home/center_view/fetch.dart';
 import 'package:ui/pages/home/center_view/filter_button_notifier.dart';
 import 'package:ui/pages/home/center_view/filter_options.dart';
 import 'package:ui/pages/home/center_view/search_field.dart';
@@ -14,7 +15,9 @@ class CenterView extends ConsumerWidget {
   final double height;
   final double width;
   final SideBarChoiceNotifier choice;
+  final TextEditingController teController;
   CenterView({
+    required this.teController,
     required this.choice,
     this.height = 500,
     this.width = 500,
@@ -50,7 +53,8 @@ class CenterView extends ConsumerWidget {
                   FilterButton(
                     filteringNotifier: _filteringNotifier,
                   ),
-                  SearchField(
+                  SearchField2(
+                    teController: teController,
                     choice: choice,
                     size: size,
                   ),
@@ -98,7 +102,15 @@ class CenterView extends ConsumerWidget {
           SearchButton(
             filteringNotifier: _filteringNotifier,
           ),
-          // const CenterViewTile(),
+          Container(
+            margin: const EdgeInsets.only(top: 52),
+            child: CenterViewTile(
+              choice: choice,
+            ),
+          ),
+          // CenterViewTile(
+          //   choice: choice,
+          // ),
         ],
       ),
     );
@@ -106,15 +118,15 @@ class CenterView extends ConsumerWidget {
 }
 
 class CenterViewTile extends ConsumerWidget {
-  // final List<Project>? projects;
+  final SideBarChoiceNotifier choice;
   final double height;
   final double width;
   final EdgeInsets? padding, margin;
   final Color textColor, backgroundColor;
   final Color? accentColor;
   const CenterViewTile({
-    // this.projects,
-    this.height = 50,
+    required this.choice,
+    this.height = 500,
     this.width = 500,
     this.padding,
     this.margin,
@@ -126,7 +138,82 @@ class CenterViewTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return const CreateButton();
+    int itemCount = 0;
+    List<dynamic>? items = [];
+    if (choice.rs != null) {
+      itemCount = choice.rs["msg"].length;
+      items = choice.rs["msg"];
+    }
+
+    // return choice.rs != null
+    //     // ? Center(child: Text("${choice.rs['msg'].length}"))
+    //     ? Center(
+    //         child: ListView.builder(
+    //           itemCount: itemCount,
+    //           itemBuilder: (BuildContext context, int idx) {
+    //             return Container(child: Text("${choice.rs['msg'][idx]}"));
+    //           },
+    //         ),
+    //       )
+    //     : Container();
+
+    return items == null
+        ? const SizedBox()
+        : ListView.builder(
+            itemCount: itemCount,
+            itemBuilder: (BuildContext context, int idx) {
+              String name = "";
+              if (choice.choice == SideBarChoice.projects) {
+                // int id = items[idx][0];
+                name = items![idx][1];
+                // String description = items[idx][2];
+                // String dueDate = items[idx][3];
+                // String creationDate = items[idx][4];
+                // String status = items[idx][5];
+                // int nrOfDevs = items[idx][6];
+              } else if (choice.choice == SideBarChoice.orgs) {
+                // fetch(choice: choice, teController: teController)
+                name = items![idx][0];
+              }
+              return Container(
+                height: 100,
+                width: 500,
+                margin: const EdgeInsets.all(5),
+                color: kcLightBlue,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: <Widget>[
+                    IconButton(
+                      onPressed: () {},
+                      icon: const Icon(Icons.arrow_drop_down),
+                    ),
+                    SizedBox(
+                      height: 100,
+                      width: 200,
+                      child: Center(
+                        child: Text(
+                          name,
+                          style: GoogleFonts.montserrat(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () {},
+                      child: const Text("Join"),
+                    ),
+                  ],
+                ),
+              );
+            },
+          );
+
+    //           return Container();
+    //         },
+    //       );
+    // return const CreateButton();
   }
 }
 

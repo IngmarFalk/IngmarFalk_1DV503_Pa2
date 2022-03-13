@@ -12,7 +12,7 @@ enum SideBarChoice { orgs, projects, tasks }
 
 class SideBarChoiceNotifier extends ChangeNotifier {
   SideBarChoice _choice = SideBarChoice.projects;
-  var _rs = "";
+  var _rs;
 
   SideBarChoice get choice => _choice;
   get rs => _rs;
@@ -30,6 +30,7 @@ class SideBarChoiceNotifier extends ChangeNotifier {
 
 class Home extends ConsumerWidget {
   static const String id = "/";
+  final TextEditingController teController = TextEditingController();
   Home({Key? key}) : super(key: key);
 
   final _choiceNotifier = ChangeNotifierProvider<SideBarChoiceNotifier>(
@@ -63,6 +64,7 @@ class Home extends ConsumerWidget {
                 top: navBarHeight + margin,
                 left: 0,
                 child: SideBar(
+                  teController: teController,
                   choice: choice,
                   color: kcIceBlue.withOpacity(.1),
                   width: sideBarWidth,
@@ -73,6 +75,7 @@ class Home extends ConsumerWidget {
                 bottom: 0,
                 right: sideBarWidth + margin,
                 child: CenterView(
+                  teController: teController,
                   choice: choice,
                   width: size.width - (sideBarWidth + margin * 3) * 2,
                   height: size.height - navBarHeight - margin * 3,

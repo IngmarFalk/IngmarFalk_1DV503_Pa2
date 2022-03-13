@@ -296,7 +296,7 @@ async def delete_project(project_data: dict[Any, Any], username: str) -> dict[An
 @app.post(ROUTES["get_orgs"])
 async def get_orgs(org_name: dict[str, Any]) -> dict[str, Any]:
     """"""
-    await create_all_orgs_view()
+    # await create_all_orgs_view()
     DB_MANAGER.use()
     DB_MANAGER.query(
         f"""
