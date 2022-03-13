@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:ui/pages/home/home.dart';
-import 'package:ui/pages/home/projects_view.dart';
+import 'package:ui/pages/home/center_view/projects_view.dart';
 import 'package:ui/pages/login/login.dart';
 import 'package:ui/pages/register/register.dart';
 

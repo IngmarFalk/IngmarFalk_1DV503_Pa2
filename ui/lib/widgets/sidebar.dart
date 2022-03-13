@@ -4,7 +4,9 @@ class SideBar extends ConsumerWidget {
   final double height;
   final double width;
   final Color color;
+  final SideBarChoiceNotifier choice;
   SideBar({
+    required this.choice,
     this.color = kcIceBlue,
     this.height = double.infinity,
     this.width = 200,
