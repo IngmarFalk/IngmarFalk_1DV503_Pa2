@@ -57,14 +57,17 @@ class SideBar extends ConsumerWidget {
               SideBarItem(
                   text: "O R G A N I Z A T I O N S",
                   onTap: () {
-                    print(choice.choice);
                     choice.choice = SideBarChoice.orgs;
-                    teController.text = "a";
+                    teController.text = " ";
                     teController.text = "";
                   }),
               SideBarItem(
                 text: "P R O J E C T S",
-                onTap: () => choice.choice = SideBarChoice.projects,
+                onTap: () {
+                  choice.choice = SideBarChoice.projects;
+                  teController.text = " ";
+                  teController.text = "";
+                },
               ),
               SideBarItem(
                 text: "T A S K S",

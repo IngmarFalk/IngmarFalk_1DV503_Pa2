@@ -51,8 +51,11 @@ class _SearchField2State extends ConsumerState<SearchField2> {
       ) =>
           Container(
         decoration: const BoxDecoration(
-          border: Border.symmetric(
-            horizontal: BorderSide(width: 1.0, color: kcMedBlue),
+          border: Border(
+            bottom: BorderSide(width: 1.0, color: kcMedBlue),
+            top: BorderSide(width: 1.0, color: kcMedBlue),
+            right: BorderSide(width: 1.0, color: kcMedBlue),
+            // horizontal: BorderSide(width: 1.0, color: kcMedBlue),
           ),
         ),
         child: Form(
@@ -66,7 +69,6 @@ class _SearchField2State extends ConsumerState<SearchField2> {
             hintText: "search",
             isShadow: false,
             height: 50,
-            width: widget.size.width - 700,
           ),
         ),
       ),

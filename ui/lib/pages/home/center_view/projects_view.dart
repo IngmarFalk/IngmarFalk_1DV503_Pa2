@@ -53,10 +53,12 @@ class CenterView extends ConsumerWidget {
                   FilterButton(
                     filteringNotifier: _filteringNotifier,
                   ),
-                  SearchField2(
-                    teController: teController,
-                    choice: choice,
-                    size: size,
+                  Expanded(
+                    child: SearchField2(
+                      teController: teController,
+                      choice: choice,
+                      size: size,
+                    ),
                   ),
                 ],
               ),
@@ -99,9 +101,9 @@ class CenterView extends ConsumerWidget {
                       ]),
                 )
               : const SizedBox(),
-          SearchButton(
-            filteringNotifier: _filteringNotifier,
-          ),
+          // SearchButton(
+          //   filteringNotifier: _filteringNotifier,
+          // ),
           Container(
             margin: const EdgeInsets.only(top: 52),
             child: CenterViewTile(
@@ -145,18 +147,6 @@ class CenterViewTile extends ConsumerWidget {
       items = choice.rs["msg"];
     }
 
-    // return choice.rs != null
-    //     // ? Center(child: Text("${choice.rs['msg'].length}"))
-    //     ? Center(
-    //         child: ListView.builder(
-    //           itemCount: itemCount,
-    //           itemBuilder: (BuildContext context, int idx) {
-    //             return Container(child: Text("${choice.rs['msg'][idx]}"));
-    //           },
-    //         ),
-    //       )
-    //     : Container();
-
     return items == null
         ? const SizedBox()
         : ListView.builder(
@@ -179,30 +169,62 @@ class CenterViewTile extends ConsumerWidget {
                 height: 100,
                 width: 500,
                 margin: const EdgeInsets.all(5),
-                color: kcLightBlue,
+                color: kcLightBlue.withOpacity(.3),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: <Widget>[
-                    IconButton(
-                      onPressed: () {},
-                      icon: const Icon(Icons.arrow_drop_down),
+                    Expanded(
+                      flex: 1,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.max,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "D E S C R I P T I O N",
+                            style: GoogleFonts.montserrat(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: kcDarkBlue,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Container(
+                            height: 50,
+                            width: 50,
+                            decoration: BoxDecoration(
+                              color: kcLightBlue.withOpacity(.5),
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            child: InkWell(
+                              onTap: () {},
+                              child: const Icon(Icons.arrow_drop_down),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    SizedBox(
-                      height: 100,
-                      width: 200,
-                      child: Center(
-                        child: Text(
-                          name,
-                          style: GoogleFonts.montserrat(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
+                    Expanded(
+                      flex: 5,
+                      child: SizedBox(
+                        height: 100,
+                        width: 200,
+                        child: Center(
+                          child: Text(
+                            name,
+                            style: GoogleFonts.montserrat(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                    TextButton(
-                      onPressed: () {},
-                      child: const Text("Join"),
+                    Expanded(
+                      flex: 1,
+                      child: TextButton(
+                        onPressed: () {},
+                        child: const Text("Join"),
+                      ),
                     ),
                   ],
                 ),
