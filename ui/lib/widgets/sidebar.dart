@@ -84,7 +84,7 @@ class SideBar extends ConsumerWidget {
               text: state.isLoggedIn ? "S I G N   O U T" : "S I G N   I N",
               onTap: () {
                 if (state.isLoggedIn) {
-                  state.setIsLoggedIn(false);
+                  state.setIsLoggedIn(false, {});
                   Navigator.pop(context);
                 } else {
                   Navigator.pushNamed(context, LoginScreen.id);
@@ -106,7 +106,7 @@ class SideBarItem extends ConsumerWidget {
   final VoidCallback onTap;
   final double height;
   final double width;
-  final Color color, textColor;
+  final Color? color, textColor;
   final Color? accentColor;
   final bool shadow;
   final double margin;
@@ -120,7 +120,7 @@ class SideBarItem extends ConsumerWidget {
     this.fontWeight = FontWeight.w500,
     this.height = 30,
     this.width = 200,
-    this.color = kcIceBlue,
+    this.color,
     this.textColor = kcDarkBlue,
     this.duration = const Duration(milliseconds: 0),
     this.accentColor,

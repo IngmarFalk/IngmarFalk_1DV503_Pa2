@@ -308,6 +308,26 @@ async def get_orgs(org_name: dict[str, Any]) -> dict[str, Any]:
     return {"msg": DB_MANAGER.query_result}
 
 
+@app.post(ROUTES["user_part_of_org"])
+async def user_part_of_org(user_data: dict[Any, Any], org_name: str) -> dict[str, bool]:
+    """"""
+    DB_MANAGER.use()
+    DB_MANAGER.query(
+        f"""
+        SELECT users.email
+        FROM developers devs
+        INNER JOIN projects
+        ON devs.project_id = projects.id
+        LEFT JOIN users
+        ON devs.username = users.username
+        WHERE projects.organization = '{org_name}';
+    """
+    )
+    # if user_data['email'] == DB_MANAGER.query_result[0][0]:
+    #   return {"msg": True}
+    return {"msg": False}
+
+
 async def create_all_orgs_view() -> None:
     """Create a view of all the projects within the database"""
     DB_MANAGER.use()
@@ -426,19 +446,3 @@ async def delete_org(org_data: dict[Any, Any], username: str) -> dict[Any, Any]:
 
     "Step 4: Delete all developers and admins"
     return {}
-
-
-# @app.post(ROUTES["get_orgs"])
-# async def get_orgs(filter: dict[str, str]):
-#     """Gets all the organizations that fit the given filter, if none, returns all"""
-
-#     DB_MANAGER.use()
-#     DB_MANAGER.query(
-#         "SELECT * FROM organizations;"
-#         # + f" WHERE {filter['condition']} GROUP BY {filter['column']} ORDER BY {filter['column']};"
-#         # if filter
-#         # else ";"
-#     )
-#     print(DB_MANAGER.query_result)
-
-#     return DB_MANAGER.query_result

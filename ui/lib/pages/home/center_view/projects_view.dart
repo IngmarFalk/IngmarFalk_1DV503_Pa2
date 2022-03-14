@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:ui/main.dart';
 import 'package:ui/pages/home/center_view/fetch.dart';
 import 'package:ui/pages/home/center_view/filter_button_notifier.dart';
 import 'package:ui/pages/home/center_view/filter_options.dart';
@@ -216,14 +217,14 @@ class Tile extends ConsumerWidget {
             mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
+              SelectableText(
                 e.key.toString(),
                 style: GoogleFonts.montserrat(
                   fontSize: 10,
                   color: kcDarkBlue,
                 ),
               ),
-              Text(
+              SelectableText(
                 e.value.toString(),
                 style: GoogleFonts.montserrat(
                   fontSize: 10,
@@ -234,6 +235,12 @@ class Tile extends ConsumerWidget {
           ),
         ),
       );
+    }
+
+    Future<bool> isPartOfOrg(Map<String?, dynamic> userData) async {
+      // Send Query
+
+      return false;
     }
 
     return AnimatedContainer(
@@ -294,9 +301,18 @@ class Tile extends ConsumerWidget {
                     padding: const EdgeInsets.only(right: 20.0, top: 7),
                     child: SideBarItem(
                       text: "J O I N",
-                      onTap: () {},
+                      onTap: () {
+                        if (InheritedLoginProvider.of(context).isLoggedIn ==
+                            false) {
+                          // Show ErrorPopUp dialog
+                          return;
+                        }
+
+                        // Else send query to backend to add user to organization
+                        // wait for response and if the action was successful,
+                        // turn J O I N button to L E A V E button.
+                      },
                       fontSize: 10,
-                      color: kcLightBlue,
                     ),
                   ),
                 ),
@@ -351,7 +367,7 @@ class CreateButton extends ConsumerWidget {
               child: const Icon(Icons.add_box),
             ),
             const SizedBox(height: 5),
-            Text(
+            SelectableText(
               "C R E A T E   P R O J E C T",
               style: GoogleFonts.montserrat(
                 fontSize: 10,

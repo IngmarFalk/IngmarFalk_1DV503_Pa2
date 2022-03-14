@@ -69,7 +69,8 @@ class CustomForm extends HookConsumerWidget {
 
                   if (msg == "") {
                     if (type == FormType.login) {
-                      InheritedLoginProvider.of(context).setIsLoggedIn(true);
+                      InheritedLoginProvider.of(context)
+                          .setIsLoggedIn(true, data);
                     }
                     Navigator.pop(context);
                   } else {
