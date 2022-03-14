@@ -6,7 +6,7 @@ class SideBar extends ConsumerWidget {
   final Color color;
   final SideBarChoiceNotifier choice;
   final TextEditingController teController;
-  SideBar({
+  const SideBar({
     required this.teController,
     required this.choice,
     this.color = kcIceBlue,

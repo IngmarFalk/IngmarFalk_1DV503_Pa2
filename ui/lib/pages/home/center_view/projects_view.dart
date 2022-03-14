@@ -119,6 +119,17 @@ class CenterView extends ConsumerWidget {
   }
 }
 
+class DescriptionToggleNotifier extends ChangeNotifier {
+  bool _open = false;
+
+  bool get open => _open;
+
+  set open(bool val) {
+    _open = val;
+    notifyListeners();
+  }
+}
+
 class CenterViewTile extends ConsumerWidget {
   final SideBarChoiceNotifier choice;
   final double height;
@@ -152,90 +163,157 @@ class CenterViewTile extends ConsumerWidget {
         : ListView.builder(
             itemCount: itemCount,
             itemBuilder: (BuildContext context, int idx) {
-              String name = "";
+              Map<String, dynamic> data = {};
               if (choice.choice == SideBarChoice.projects) {
-                // int id = items[idx][0];
-                name = items![idx][1];
-                // String description = items[idx][2];
-                // String dueDate = items[idx][3];
-                // String creationDate = items[idx][4];
-                // String status = items[idx][5];
-                // int nrOfDevs = items[idx][6];
+                data = {
+                  "id": items![idx][0],
+                  "name": items[idx][1],
+                  "description": items[idx][2],
+                  "dueData": items[idx][3],
+                  "creationDate": items[idx][4],
+                  "status": items[idx][5],
+                  "developers": items[idx][6],
+                };
               } else if (choice.choice == SideBarChoice.orgs) {
-                // fetch(choice: choice, teController: teController)
-                name = items![idx][0];
+                data = {
+                  "name": items![idx][0],
+                  "field": items[idx][1],
+                  "description": items[idx][2],
+                  "developers": items[idx][3],
+                };
               }
-              return Container(
-                height: 100,
-                width: 500,
-                margin: const EdgeInsets.all(5),
-                color: kcLightBlue.withOpacity(.3),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: <Widget>[
-                    Expanded(
-                      flex: 1,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.max,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            "D E S C R I P T I O N",
-                            style: GoogleFonts.montserrat(
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              color: kcDarkBlue,
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Container(
-                            height: 50,
-                            width: 50,
-                            decoration: BoxDecoration(
-                              color: kcLightBlue.withOpacity(.5),
-                              borderRadius: BorderRadius.circular(5),
-                            ),
-                            child: InkWell(
-                              onTap: () {},
-                              child: const Icon(Icons.arrow_drop_down),
-                            ),
-                          ),
-                        ],
-                      ),
+              return Tile(data: data);
+            },
+          );
+  }
+}
+
+class Tile extends ConsumerWidget {
+  Tile({
+    Key? key,
+    required this.data,
+  }) : super(key: key);
+
+  final Map<String, dynamic> data;
+  final _toggleDescriptionProvider =
+      ChangeNotifierProvider<DescriptionToggleNotifier>(
+    (ref) => DescriptionToggleNotifier(),
+  );
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDescriptionOpen = ref.watch(_toggleDescriptionProvider);
+
+    List<Widget> descriptionItems = [];
+
+    for (MapEntry e in data.entries) {
+      descriptionItems.add(
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 5),
+          height: 50,
+          width: 100,
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                e.key.toString(),
+                style: GoogleFonts.montserrat(
+                  fontSize: 10,
+                  color: kcDarkBlue,
+                ),
+              ),
+              Text(
+                e.value.toString(),
+                style: GoogleFonts.montserrat(
+                  fontSize: 10,
+                  color: kcDarkBlue,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 100),
+      height: isDescriptionOpen.open ? 200 : 100,
+      width: 500,
+      margin: const EdgeInsets.all(5),
+      decoration: BoxDecoration(
+        // color: kcIceBlue.withOpacity(.1),
+        border: Border.all(
+          style: BorderStyle.solid,
+          color: kcMedBlue,
+          width: 1,
+        ),
+      ),
+      child: Column(
+        children: [
+          Expanded(
+            flex: 1,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: <Widget>[
+                Expanded(
+                  flex: 1,
+                  child: Container(
+                    height: 70,
+                    padding: const EdgeInsets.only(left: 20.0, top: 7),
+                    child: SideBarItem(
+                      text: "D E S C R I P T I O N",
+                      onTap: () {
+                        isDescriptionOpen.open = !isDescriptionOpen.open;
+                      },
+                      fontSize: 10,
+                      color: kcLightBlue,
                     ),
-                    Expanded(
-                      flex: 5,
-                      child: SizedBox(
-                        height: 100,
-                        width: 200,
-                        child: Center(
-                          child: Text(
-                            name,
-                            style: GoogleFonts.montserrat(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                  ),
+                ),
+                Expanded(
+                  flex: 5,
+                  child: SizedBox(
+                    height: 100,
+                    width: 200,
+                    child: Center(
+                      child: Text(
+                        data["name"],
+                        style: GoogleFonts.montserrat(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
-                    Expanded(
-                      flex: 1,
-                      child: TextButton(
-                        onPressed: () {},
-                        child: const Text("Join"),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              );
-            },
-          );
-
-    //           return Container();
-    //         },
-    //       );
-    // return const CreateButton();
+                Expanded(
+                  flex: 1,
+                  child: Container(
+                    height: 70,
+                    padding: const EdgeInsets.only(right: 20.0, top: 7),
+                    child: SideBarItem(
+                      text: "J O I N",
+                      onTap: () {},
+                      fontSize: 10,
+                      color: kcLightBlue,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          isDescriptionOpen.open
+              ? Expanded(
+                  flex: 1,
+                  child: Wrap(
+                    children: [...descriptionItems],
+                  ),
+                )
+              : const SizedBox(),
+        ],
+      ),
+    );
   }
 }
 
