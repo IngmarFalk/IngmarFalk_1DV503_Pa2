@@ -330,7 +330,7 @@ async def delete_project(project_data: dict[Any, Any], username: str) -> dict[An
 @app.post(ROUTES["get_orgs"])
 async def get_orgs(org_name: dict[str, Any]) -> dict[str, Any]:
     """"""
-    await create_all_orgs_view()
+    # await create_all_orgs_view()
     DB_MANAGER.use()
     DB_MANAGER.query(
         f"""
@@ -353,7 +353,11 @@ async def user_part_of_org(user_data: dict[Any, Any], org_name: str) -> dict[str
         INNER JOIN projects
         ON devs.project_id = projects.id
         LEFT JOIN users
+<<<<<<< HEAD
         ON devs.email = users.email
+=======
+        ON devs.username = users.username
+>>>>>>> 0d760a2f2d73cfab1138721bccb09659da350756
         WHERE projects.organization = '{org_name}';
     """
     )
@@ -481,6 +485,7 @@ async def delete_org(org_data: dict[Any, Any], username: str) -> dict[Any, Any]:
 
     "Step 4: Delete all developers and admins"
     return {}
+<<<<<<< HEAD
 
 
 @app.post(ROUTES["add_employee"])
@@ -512,3 +517,5 @@ async def add_employee(
     )
 
     return {"msg": "User added"}
+=======
+>>>>>>> 0d760a2f2d73cfab1138721bccb09659da350756

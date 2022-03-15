@@ -58,19 +58,25 @@ class SideBar extends ConsumerWidget {
               SideBarItem(
                   text: "O R G A N I Z A T I O N S",
                   onTap: () {
-                    // await fetch(choice: choice, teController: teController);
                     choice.choice = SideBarChoice.orgs;
-                    teController.text = "a";
+                    teController.text = " ";
                     teController.text = "";
                   }),
               SideBarItem(
                 text: "P R O J E C T S",
-                onTap: () async {
-                  await fetch(choice: choice, teController: teController);
+                onTap: () {
                   choice.choice = SideBarChoice.projects;
-                  teController.text = "a";
+                  teController.text = " ";
                   teController.text = "";
                 },
+              ),
+              SideBarItem(
+                text: "T A S K S",
+                onTap: () {},
+              ),
+              SideBarItem(
+                text: "M E S S A G E S",
+                onTap: () {},
               ),
               data.isLoggedIn
                   ? SideBarItem(
@@ -87,13 +93,13 @@ class SideBar extends ConsumerWidget {
             ],
           ),
           Column(children: <Widget>[
-            SelectableText(data.isLoggedIn ? data.userData!["email"] : ""),
+            SelectableText(data.isLoggedIn ? data.userData["email"] : ""),
             SideBarItem(
               text: state.isLoggedIn ? "S I G N   O U T" : "S I G N   I N",
               onTap: () {
                 if (state.isLoggedIn) {
                   state.setIsLoggedIn(false, {});
-                  // Navigator.pop(context);
+                  Navigator.pop(context);
                 } else {
                   Navigator.pushNamed(context, LoginScreen.id);
                 }
