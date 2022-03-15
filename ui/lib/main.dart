@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:ui/pages/home/home.dart';
 import 'package:ui/pages/home/center_view/projects_view.dart';
+import 'package:ui/pages/home/home.dart';
 import 'package:ui/pages/login/login.dart';
 import 'package:ui/pages/register/register.dart';
 
@@ -20,9 +20,9 @@ Future<void> main() async {
 
 class InheritedLoginProviderWrapper extends StatefulWidget {
   final Widget child;
-  const InheritedLoginProviderWrapper({
-    required this.child,
+  InheritedLoginProviderWrapper({
     Key? key,
+    required this.child,
   }) : super(key: key);
 
   @override
@@ -32,12 +32,13 @@ class InheritedLoginProviderWrapper extends StatefulWidget {
 
 class _InheritedLoginProviderWrapperState
     extends State<InheritedLoginProviderWrapper> {
-  // TODO : Add possibility to retrieve the account the user is logged in as
+  Map<String?, dynamic>? userData;
   bool isLoggedIn = false;
 
-  void setIsLoggedIn(bool val) {
+  void setIsLoggedIn(bool val, Map<String?, dynamic> newUserData) {
     setState(() {
       isLoggedIn = val;
+      userData = newUserData;
     });
   }
 

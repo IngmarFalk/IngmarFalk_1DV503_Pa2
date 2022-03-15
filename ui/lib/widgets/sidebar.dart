@@ -5,7 +5,9 @@ class SideBar extends ConsumerWidget {
   final double width;
   final Color color;
   final SideBarChoiceNotifier choice;
-  SideBar({
+  final TextEditingController teController;
+  const SideBar({
+    required this.teController,
     required this.choice,
     this.color = kcIceBlue,
     this.height = double.infinity,
@@ -13,16 +15,20 @@ class SideBar extends ConsumerWidget {
     Key? key,
   }) : super(key: key);
 
-  final Map<String, Function> sideBarItems = {
-    "O R G A N I Z A T I O N S": () {},
-    "P R O J E C T S": () {},
-    "T A S K S": () {},
-    "M E S S A G E S": () {},
-  };
+  // final Map<String, Function> sideBarItems = {
+  //   "O R G A N I Z A T I O N S":
+  //(SideBarChoiceNotifier choice) =>
+  //       choice.choice = SideBarChoice.orgs,
+  //   "P R O J E C T S": (SideBarChoiceNotifier choice) =>
+  //       choice.choice = SideBarChoice.projects,
+  //   "T A S K S": () {},
+  //   "M E S S A G E S": () {},
+  // };
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = InheritedLoginProvider.of(context);
+    final data = InheritedLoginProvider.of(context);
 
     return Container(
       margin: const EdgeInsets.all(10),
@@ -50,30 +56,44 @@ class SideBar extends ConsumerWidget {
               ),
               const SizedBox(height: 10),
               SideBarItem(
-                text: "O R G A N I Z A T I O N S",
-                onTap: () {},
-              ),
+                  text: "O R G A N I Z A T I O N S",
+                  onTap: () {
+                    // await fetch(choice: choice, teController: teController);
+                    choice.choice = SideBarChoice.orgs;
+                    teController.text = "a";
+                    teController.text = "";
+                  }),
               SideBarItem(
                 text: "P R O J E C T S",
-                onTap: () {},
+                onTap: () async {
+                  await fetch(choice: choice, teController: teController);
+                  choice.choice = SideBarChoice.projects;
+                  teController.text = "a";
+                  teController.text = "";
+                },
               ),
-              SideBarItem(
-                text: "T A S K S",
-                onTap: () {},
-              ),
-              SideBarItem(
-                text: "M E S S A G E S",
-                onTap: () {},
-              ),
+              data.isLoggedIn
+                  ? SideBarItem(
+                      text: "T A S K S",
+                      onTap: () {},
+                    )
+                  : const SizedBox(),
+              data.isLoggedIn
+                  ? SideBarItem(
+                      text: "M E S S A G E S",
+                      onTap: () {},
+                    )
+                  : const SizedBox(),
             ],
           ),
           Column(children: <Widget>[
+            SelectableText(data.isLoggedIn ? data.userData!["email"] : ""),
             SideBarItem(
               text: state.isLoggedIn ? "S I G N   O U T" : "S I G N   I N",
               onTap: () {
                 if (state.isLoggedIn) {
-                  state.setIsLoggedIn(false);
-                  Navigator.pop(context);
+                  state.setIsLoggedIn(false, {});
+                  // Navigator.pop(context);
                 } else {
                   Navigator.pushNamed(context, LoginScreen.id);
                 }
@@ -94,7 +114,7 @@ class SideBarItem extends ConsumerWidget {
   final VoidCallback onTap;
   final double height;
   final double width;
-  final Color color, textColor;
+  final Color? color, textColor;
   final Color? accentColor;
   final bool shadow;
   final double margin;
@@ -108,7 +128,7 @@ class SideBarItem extends ConsumerWidget {
     this.fontWeight = FontWeight.w500,
     this.height = 30,
     this.width = 200,
-    this.color = kcIceBlue,
+    this.color,
     this.textColor = kcDarkBlue,
     this.duration = const Duration(milliseconds: 0),
     this.accentColor,

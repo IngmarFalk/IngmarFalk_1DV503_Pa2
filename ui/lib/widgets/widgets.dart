@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ui/main.dart';
+import 'package:ui/pages/home/center_view/fetch.dart';
 import 'package:ui/pages/home/home.dart';
 import 'package:ui/pages/login/login.dart';
 import 'package:ui/theme/colors.dart';

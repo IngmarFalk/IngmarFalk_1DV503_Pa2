@@ -33,16 +33,19 @@ ROUTES = {
     "login": "/login/",
     "register": "/register/",
     "delete_user": "/delete_user/",
-    "project_adduser": "/{user}/{project}/{username}",
     "user": "/user/",
     "projects": "/user/{username}/projects/",
     "create_project": "/user/{username}/create_project/",
     "alter_project": "/user/{username}/alter_project/",
     "delete_project": "/user/{username}/delete_project/",
+    "user_part_of_project": "user/{email}/",
+    "add_developer_to_project": "user/{username}/{project_id}",
     "get_projects": "/projects/",
     "create_org": "/user/{username}/create_org",
     "delete_org": "/user/{username}/delete_org",
     "get_orgs": "/orgs/",
+    "user_part_of_org": "/user/{email}/",
+    "add_employee": "/user/add_employee",
 }
 
 DB_MANAGER = init_db()
@@ -197,9 +200,8 @@ async def delete_user(user_data: dict[Any, Any], tables: list[str]) -> str:
 
 @app.post(ROUTES["get_projects"])
 async def get_projects(project_name: dict[str, Any]) -> dict[str, Any]:
-    """
+    """"""
     await create_all_projects_view()
-    """
     DB_MANAGER.use()
     DB_MANAGER.query(
         f"""
@@ -214,7 +216,8 @@ async def get_projects(project_name: dict[str, Any]) -> dict[str, Any]:
 async def create_all_projects_view() -> None:
     """Create a view of all the projects within the database"""
     DB_MANAGER.use()
-    q = """CREATE VIEW all_projects 
+    DB_MANAGER.query(
+        """CREATE OR REPLACE VIEW all_projects 
     AS SELECT 
         id, 
         name, 
@@ -228,7 +231,7 @@ async def create_all_projects_view() -> None:
         FROM projects 
         LEFT JOIN developers devs 
         ON devs.project_id = projects.id;"""
-    DB_MANAGER.query(q)
+    )
 
 
 async def check_for_project(project_data: dict[Any, Any]) -> bool:
@@ -246,6 +249,37 @@ async def check_for_project(project_data: dict[Any, Any]) -> bool:
     if len(DB_MANAGER.query_result) == 0:
         return False
     return True
+
+
+@app.post(ROUTES["add_developer_to_project"])
+async def add_developer_to_projects(
+    user_data: dict[Any, Any],
+    project_id: int,
+) -> dict[Any, Any]:
+    """"""
+
+    DB_MANAGER.use()
+
+    DB_MANAGER.query(
+        f"""SELECT * 
+        FROM developers 
+        WHERE username = '{user_data['username']}'
+        AND project_id = '{project_id}'"""
+    )
+
+    if len(DB_MANAGER.query_result) == 0:
+        return {"msg": ""}
+
+    DB_MANAGER.query(
+        ProjM().developers.insert(
+            {
+                "username": user_data["username"],
+                "project_id": project_id,
+            }
+        )
+    )
+
+    return {"msg": "User added"}
 
 
 @app.post(ROUTES["create_project"])
@@ -308,21 +342,42 @@ async def get_orgs(org_name: dict[str, Any]) -> dict[str, Any]:
     return {"msg": DB_MANAGER.query_result}
 
 
+@app.post(ROUTES["user_part_of_org"])
+async def user_part_of_org(user_data: dict[Any, Any], org_name: str) -> dict[str, bool]:
+    """"""
+    DB_MANAGER.use()
+    DB_MANAGER.query(
+        f"""
+        SELECT users.email
+        FROM developers devs
+        INNER JOIN projects
+        ON devs.project_id = projects.id
+        LEFT JOIN users
+        ON devs.email = users.email
+        WHERE projects.organization = '{org_name}';
+    """
+    )
+    # if user_data['email'] == DB_MANAGER.query_result[0][0]:
+    #   return {"msg": True}
+    return {"msg": False}
+
+
 async def create_all_orgs_view() -> None:
     """Create a view of all the projects within the database"""
     DB_MANAGER.use()
     q = """
-    CREATE VIEW all_orgs 
+    CREATE OR REPLACE VIEW all_orgs 
     AS SELECT 
         name, 
         field, 
         description, 
-        (SELECT COUNT(*) 
-            FROM developers 
+        (SELECT COUNT(devs.username)
+            FROM developers devs 
             INNER JOIN projects 
-            ON projects.id = developers.project_id 
-            WHERE projects.organization = organizations.name) as devs 
-    FROM organizations;"""
+            ON projects.id = devs.project_id 
+            WHERE projects.organization = orgs.name 
+            GROUP BY orgs.name) as devs
+    FROM organizations orgs;"""
     DB_MANAGER.query(q)
 
 
@@ -428,17 +483,32 @@ async def delete_org(org_data: dict[Any, Any], username: str) -> dict[Any, Any]:
     return {}
 
 
-# @app.post(ROUTES["get_orgs"])
-# async def get_orgs(filter: dict[str, str]):
-#     """Gets all the organizations that fit the given filter, if none, returns all"""
+@app.post(ROUTES["add_employee"])
+async def add_employee(
+    user_data: dict[Any, Any],
+    org_name: str,
+) -> dict[Any, Any]:
+    """"""
 
-#     DB_MANAGER.use()
-#     DB_MANAGER.query(
-#         "SELECT * FROM organizations;"
-#         # + f" WHERE {filter['condition']} GROUP BY {filter['column']} ORDER BY {filter['column']};"
-#         # if filter
-#         # else ";"
-#     )
-#     print(DB_MANAGER.query_result)
+    DB_MANAGER.use()
 
-#     return DB_MANAGER.query_result
+    DB_MANAGER.query(
+        f"""SELECT * 
+        FROM developers 
+        WHERE username = '{user_data['username']}'
+        AND project_id = '{org_name}'"""
+    )
+
+    if len(DB_MANAGER.query_result) == 0:
+        return {"msg": ""}
+
+    DB_MANAGER.query(
+        ProjM().developers.insert(
+            {
+                "username": user_data["username"],
+                "project_id": org_name,
+            }
+        )
+    )
+
+    return {"msg": "User added"}

@@ -107,17 +107,22 @@ class Organizations(Table):
 
 
 class Admins(Table):
-    username: VARCHAR = VARCHAR(size=255)
+    email: VARCHAR = VARCHAR(size=255)
     organization: VARCHAR = VARCHAR(size=255)
 
 
 class Developers(Table):
-    username: VARCHAR = VARCHAR(size=255)
+    email: VARCHAR = VARCHAR(size=255)
     project_id: INT = INT()
 
 
+class Employees(Table):
+    email: VARCHAR = VARCHAR(size=255)
+    organization: VARCHAR = VARCHAR(size=255)
+
+
 class ProjectLeaders(Table):
-    username: VARCHAR = VARCHAR(size=255)
+    email: VARCHAR = VARCHAR(size=255)
     project_id: INT = INT()
     organization: VARCHAR = VARCHAR(size=255)
 
@@ -129,6 +134,7 @@ class ProjM(Database):
     tasks = Tasks()
     admins = Admins()
     developers = Developers()
+    employees = Employees()
     projectleaders = ProjectLeaders()
 
 

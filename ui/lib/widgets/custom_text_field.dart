@@ -23,7 +23,7 @@ class CustomTextField extends ConsumerWidget {
   final double? fontSize;
   final bool? enabled;
   final bool autofocus, isShadow;
-  final bool obscureText;
+  bool obscureText;
   final FocusNode? focusNode;
   final int? minLines, maxLines;
   final ValueChanged<String>? onChanged;
@@ -121,7 +121,9 @@ class CustomTextField extends ConsumerWidget {
           InkWell(
             // onHover: (val) => status.onTextFieldHover(val),
             onTap: () async {
-              if (suffixIcon == null && controller != null) {
+              if (suffixIcon == null &&
+                  controller != null &&
+                  obscureText != true) {
                 controller!.clear();
               } else {
                 status.obscured = true;
@@ -256,9 +258,9 @@ class SuffixIconWidget extends StatelessWidget {
       margin: const EdgeInsets.only(right: 15),
       alignment: Alignment.centerRight,
       child: Icon(
-        (suffixIcon == null || obscureText == false)
+        (suffixIcon == null && obscureText == false)
             ? Icons.close
-            : suffixIcon?.icon ?? Icons.visibility,
+            : Icons.visibility,
         color: textColor,
       ),
     );
