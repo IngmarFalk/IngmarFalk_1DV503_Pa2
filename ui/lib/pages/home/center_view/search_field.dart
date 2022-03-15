@@ -1,8 +1,5 @@
-<<<<<<< HEAD
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-=======
->>>>>>> 0d760a2f2d73cfab1138721bccb09659da350756
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:ui/pages/home/center_view/fetch.dart';
@@ -22,7 +19,6 @@ class SearchField2 extends StatefulHookConsumerWidget {
     Key? key,
   }) : super(key: key);
 
-<<<<<<< HEAD
   static Future<void> fetch({
     required SideBarChoiceNotifier choice,
     required TextEditingController teController,
@@ -59,15 +55,12 @@ class SearchField2 extends StatefulHookConsumerWidget {
     // }
   }
 
-=======
->>>>>>> 0d760a2f2d73cfab1138721bccb09659da350756
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _SearchField2State();
 }
 
 class _SearchField2State extends ConsumerState<SearchField2> {
   late Future<void> _future;
-<<<<<<< HEAD
 
   @override
   void initState() {
@@ -88,28 +81,6 @@ class _SearchField2State extends ConsumerState<SearchField2> {
     // final TextEditingController teController = useTextEditingController();
     final choice = widget.choice;
 
-=======
-
-  @override
-  void initState() {
-    _future = fetch(
-      choice: widget.choice,
-      teController: widget.teController,
-    );
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // final TextEditingController teController = useTextEditingController();
-    final choice = widget.choice;
-
->>>>>>> 0d760a2f2d73cfab1138721bccb09659da350756
     return FutureBuilder(
       future: _future,
       builder: (

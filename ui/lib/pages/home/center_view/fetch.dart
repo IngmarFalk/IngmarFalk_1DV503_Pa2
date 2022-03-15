@@ -31,17 +31,10 @@ Future<void> fetch({
     headers: {"Content-type": "application/json"},
   );
 
-<<<<<<< HEAD
   // await Future.delayed(Duration(milliseconds: 2000));
 
   choice.rs = json.decode(resp.body);
   // for (var i = 0; i < choice.rs["msg"].length; i++) {
   //   print(choice.rs["msg"][i]);
   // }
-=======
-  choice.rs = json.decode(resp.body);
-  for (var i = 0; i < choice.rs["msg"].length; i++) {
-    print(choice.rs["msg"][i]);
-  }
->>>>>>> 0d760a2f2d73cfab1138721bccb09659da350756
 }

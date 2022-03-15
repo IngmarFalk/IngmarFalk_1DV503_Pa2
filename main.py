@@ -45,7 +45,7 @@ ROUTES = {
     "delete_org": "/user/{username}/delete_org",
     "get_orgs": "/orgs/",
     "user_part_of_org": "/user/{email}/",
-    "add_employee": "/user/add_employee",
+    "add_employee": "/add_employee/",
 }
 
 DB_MANAGER = init_db()
@@ -485,37 +485,35 @@ async def delete_org(org_data: dict[Any, Any], username: str) -> dict[Any, Any]:
 
     "Step 4: Delete all developers and admins"
     return {}
-<<<<<<< HEAD
 
 
 @app.post(ROUTES["add_employee"])
 async def add_employee(
-    user_data: dict[Any, Any],
+    email: str,
     org_name: str,
 ) -> dict[Any, Any]:
     """"""
 
     DB_MANAGER.use()
 
-    DB_MANAGER.query(
-        f"""SELECT * 
-        FROM developers 
-        WHERE username = '{user_data['username']}'
-        AND project_id = '{org_name}'"""
-    )
+    q = f"""SELECT * 
+        FROM employees 
+        WHERE email = '{email}'
+        AND organization = '{org_name}'"""
 
-    if len(DB_MANAGER.query_result) == 0:
-        return {"msg": ""}
+    DB_MANAGER.query(q)
+
+    if len(DB_MANAGER.query_result) != 0:
+        return {"msg": "employee already exists"}
 
     DB_MANAGER.query(
-        ProjM().developers.insert(
+        ProjM().employees.insert(
             {
-                "username": user_data["username"],
-                "project_id": org_name,
+                "email": email,
+                "organization": org_name,
             }
-        )
+        ),
+        *(email, org_name),
     )
 
-    return {"msg": "User added"}
-=======
->>>>>>> 0d760a2f2d73cfab1138721bccb09659da350756
+    return {"msg": ""}

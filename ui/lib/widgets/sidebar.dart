@@ -28,7 +28,7 @@ class SideBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = InheritedLoginProvider.of(context);
-    final data = InheritedLoginProvider.of(context);
+    print(state.isLoggedIn);
 
     return Container(
       margin: const EdgeInsets.all(10),
@@ -70,21 +70,13 @@ class SideBar extends ConsumerWidget {
                   teController.text = "";
                 },
               ),
-              SideBarItem(
-                text: "T A S K S",
-                onTap: () {},
-              ),
-              SideBarItem(
-                text: "M E S S A G E S",
-                onTap: () {},
-              ),
-              data.isLoggedIn
+              state.isLoggedIn
                   ? SideBarItem(
                       text: "T A S K S",
                       onTap: () {},
                     )
                   : const SizedBox(),
-              data.isLoggedIn
+              state.isLoggedIn
                   ? SideBarItem(
                       text: "M E S S A G E S",
                       onTap: () {},
@@ -93,7 +85,7 @@ class SideBar extends ConsumerWidget {
             ],
           ),
           Column(children: <Widget>[
-            SelectableText(data.isLoggedIn ? data.userData["email"] : ""),
+            SelectableText(state.isLoggedIn ? state.userData!["email"] : ""),
             SideBarItem(
               text: state.isLoggedIn ? "S I G N   O U T" : "S I G N   I N",
               onTap: () {

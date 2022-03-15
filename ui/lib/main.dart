@@ -32,7 +32,6 @@ class InheritedLoginProviderWrapper extends StatefulWidget {
 
 class _InheritedLoginProviderWrapperState
     extends State<InheritedLoginProviderWrapper> {
-<<<<<<< HEAD
   Map<String?, dynamic>? userData;
   bool isLoggedIn = false;
 
@@ -40,15 +39,6 @@ class _InheritedLoginProviderWrapperState
     setState(() {
       isLoggedIn = val;
       userData = newUserData;
-=======
-  Map<String, dynamic> userData = {};
-  bool isLoggedIn = false;
-
-  void setIsLoggedIn(bool val, Map<String?, dynamic> userData) {
-    setState(() {
-      isLoggedIn = val;
-      userData = userData;
->>>>>>> 0d760a2f2d73cfab1138721bccb09659da350756
     });
   }
 

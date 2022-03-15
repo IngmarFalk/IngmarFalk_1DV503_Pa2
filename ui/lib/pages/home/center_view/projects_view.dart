@@ -110,10 +110,7 @@ class CenterView extends ConsumerWidget {
           Container(
             margin: const EdgeInsets.only(top: 52),
             child: CenterViewTile(
-<<<<<<< HEAD
               teController: teController,
-=======
->>>>>>> 0d760a2f2d73cfab1138721bccb09659da350756
               choice: choice,
             ),
           ),
@@ -127,22 +124,16 @@ class CenterView extends ConsumerWidget {
 }
 
 class DescriptionToggleNotifier extends ChangeNotifier {
-<<<<<<< HEAD
   bool _userJoinedOrg = false;
   bool _open = false;
 
   bool get userJoinedOrg => _userJoinedOrg;
-=======
-  bool _open = false;
-
->>>>>>> 0d760a2f2d73cfab1138721bccb09659da350756
   bool get open => _open;
 
   set open(bool val) {
     _open = val;
     notifyListeners();
   }
-<<<<<<< HEAD
 
   set userJoinedOrg(bool val) {
     _userJoinedOrg = val;
@@ -171,16 +162,11 @@ class DescriptionToggleNotifier extends ChangeNotifier {
 
     _userJoinedOrg = false;
   }
-=======
->>>>>>> 0d760a2f2d73cfab1138721bccb09659da350756
 }
 
 class CenterViewTile extends ConsumerWidget {
   final SideBarChoiceNotifier choice;
-<<<<<<< HEAD
   final TextEditingController teController;
-=======
->>>>>>> 0d760a2f2d73cfab1138721bccb09659da350756
   final double height;
   final double width;
   final EdgeInsets? padding, margin;
@@ -188,10 +174,7 @@ class CenterViewTile extends ConsumerWidget {
   final Color? accentColor;
   const CenterViewTile({
     required this.choice,
-<<<<<<< HEAD
     required this.teController,
-=======
->>>>>>> 0d760a2f2d73cfab1138721bccb09659da350756
     this.height = 500,
     this.width = 500,
     this.padding,
@@ -211,7 +194,6 @@ class CenterViewTile extends ConsumerWidget {
       items = choice.rs["msg"];
     }
 
-<<<<<<< HEAD
     if (items == null) {
       return const SizedBox();
     } else {
@@ -263,35 +245,6 @@ class CenterViewTile extends ConsumerWidget {
         },
       );
     }
-=======
-    return items == null
-        ? const SizedBox()
-        : ListView.builder(
-            itemCount: itemCount,
-            itemBuilder: (BuildContext context, int idx) {
-              Map<String, dynamic> data = {};
-              if (choice.choice == SideBarChoice.projects) {
-                data = {
-                  "id": items![idx][0],
-                  "name": items[idx][1],
-                  "description": items[idx][2],
-                  "dueData": items[idx][3],
-                  "creationDate": items[idx][4],
-                  "status": items[idx][5],
-                  "developers": items[idx][6],
-                };
-              } else if (choice.choice == SideBarChoice.orgs) {
-                data = {
-                  "name": items![idx][0],
-                  "field": items[idx][1],
-                  "description": items[idx][2],
-                  "developers": items[idx][3],
-                };
-              }
-              return Tile(data: data);
-            },
-          );
->>>>>>> 0d760a2f2d73cfab1138721bccb09659da350756
   }
 }
 
@@ -309,7 +262,6 @@ class Tile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-<<<<<<< HEAD
     final status = ref.watch(_toggleDescriptionProvider);
     final userD = InheritedLoginProvider.of(context).userData;
 
@@ -318,11 +270,6 @@ class Tile extends ConsumerWidget {
     }
 
     List<Widget> descriptionItems = List.generate(10, (idx) => Container());
-=======
-    final isDescriptionOpen = ref.watch(_toggleDescriptionProvider);
-
-    List<Widget> descriptionItems = [];
->>>>>>> 0d760a2f2d73cfab1138721bccb09659da350756
 
     for (MapEntry e in data.entries) {
       descriptionItems.add(
@@ -337,21 +284,13 @@ class Tile extends ConsumerWidget {
               SelectableText(
                 e.key.toString(),
                 style: GoogleFonts.montserrat(
-<<<<<<< HEAD
                   fontWeight: FontWeight.bold,
                   fontSize: 12,
-=======
-                  fontSize: 10,
->>>>>>> 0d760a2f2d73cfab1138721bccb09659da350756
                   color: kcDarkBlue,
                 ),
               ),
               SelectableText(
-<<<<<<< HEAD
                 e.value == null ? "No Data" : e.value.toString(),
-=======
-                e.value.toString(),
->>>>>>> 0d760a2f2d73cfab1138721bccb09659da350756
                 style: GoogleFonts.montserrat(
                   fontSize: 10,
                   color: kcDarkBlue,
@@ -363,21 +302,9 @@ class Tile extends ConsumerWidget {
       );
     }
 
-<<<<<<< HEAD
     return AnimatedContainer(
       duration: const Duration(milliseconds: 100),
       height: status.open ? 200 : 100,
-=======
-    Future<bool> isPartOfOrg(Map<String?, dynamic> userData) async {
-      // Send Query
-
-      return false;
-    }
-
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 100),
-      height: isDescriptionOpen.open ? 200 : 100,
->>>>>>> 0d760a2f2d73cfab1138721bccb09659da350756
       width: 500,
       margin: const EdgeInsets.all(5),
       decoration: BoxDecoration(
@@ -403,11 +330,7 @@ class Tile extends ConsumerWidget {
                     child: SideBarItem(
                       text: "D E S C R I P T I O N",
                       onTap: () {
-<<<<<<< HEAD
                         status.open = !status.open;
-=======
-                        isDescriptionOpen.open = !isDescriptionOpen.open;
->>>>>>> 0d760a2f2d73cfab1138721bccb09659da350756
                       },
                       fontSize: 10,
                       color: kcLightBlue,
@@ -436,62 +359,50 @@ class Tile extends ConsumerWidget {
                     height: 70,
                     padding: const EdgeInsets.only(right: 20.0, top: 7),
                     child: SideBarItem(
-<<<<<<< HEAD
                       text: status.userJoinedOrg ? "L E A V E" : "J O I N",
                       // text: "J O I N",
                       onTap: () async {
-                        // if (InheritedLoginProvider.of(context).isLoggedIn ==
-                        //     false) {
-                        //   showDialog(
-                        //     context: context,
-                        //     builder: (BuildContext context) {
-                        //       return const ErrorPopUp(
-                        //           msg: "You need to be logged in");
-                        //     },
-                        //   );
-                        //   return;
-                        // }
-
-                        // final jsonData = json.encode(
-                        //   {
-                        //     "username": InheritedLoginProvider.of(context)
-                        //         .userData!["email"],
-                        //     "org_name": data["name"],
-                        //   },
-                        // );
-
-                        // final resp = await http.post(
-                        //   Uri.parse('http://127.0.0.1:8000/user/add_employee'),
-                        //   body: jsonData,
-                        // );
-
-                        // final decodedResp = json.decode(resp.toString());
-
-                        // if (decodedResp["msg"] == "") {
-                        //   status.userJoinedOrg = true;
-                        // } else {
-                        //   showDialog(
-                        //     context: context,
-                        //     builder: (BuildContext context) {
-                        //       return const ErrorPopUp(
-                        //         msg: "Couldnt add user to organization",
-                        //       );
-                        // },
-                        // );
-                        // }
-=======
-                      text: "J O I N",
-                      onTap: () {
                         if (InheritedLoginProvider.of(context).isLoggedIn ==
                             false) {
-                          // Show ErrorPopUp dialog
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return const ErrorPopUp(
+                                  msg: "You need to be logged in");
+                            },
+                          );
                           return;
                         }
 
->>>>>>> 0d760a2f2d73cfab1138721bccb09659da350756
-                        // Else send query to backend to add user to organization
-                        // wait for response and if the action was successful,
-                        // turn J O I N button to L E A V E button.
+                        final jsonData = json.encode(
+                          {
+                            "username": InheritedLoginProvider.of(context)
+                                .userData!["email"],
+                            "org_name": data["name"],
+                          },
+                        );
+
+                        final resp = await http.post(
+                          Uri.parse(
+                              'http://127.0.0.1:8000/add_employee/?email=${userD!['email']}&org_name=${data['name']}'),
+                          // body: jsonData,
+                        );
+
+                        final msg = json.decode(resp.body)["msg"];
+
+                        if (msg == "") {
+                          print("True think");
+                          status.userJoinedOrg = true;
+                        } else {
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return const ErrorPopUp(
+                                msg: "Couldnt add user to organization",
+                              );
+                            },
+                          );
+                        }
                       },
                       fontSize: 10,
                     ),
@@ -500,15 +411,15 @@ class Tile extends ConsumerWidget {
               ],
             ),
           ),
-<<<<<<< HEAD
           status.open
-=======
-          isDescriptionOpen.open
->>>>>>> 0d760a2f2d73cfab1138721bccb09659da350756
               ? Expanded(
                   flex: 1,
-                  child: Wrap(
-                    children: [...descriptionItems],
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 50),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [...descriptionItems],
+                    ),
                   ),
                 )
               : const SizedBox(),
