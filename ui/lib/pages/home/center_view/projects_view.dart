@@ -5,10 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ui/main.dart';
 import 'package:ui/pages/home/center_view/filter_button_notifier.dart';
-import 'package:ui/pages/home/center_view/filter_options.dart';
 import 'package:ui/pages/home/center_view/search_field.dart';
 import 'package:ui/pages/home/home.dart';
-import 'package:ui/pages/projects/create_project.dart';
 import 'package:ui/theme/colors.dart';
 import 'package:ui/widgets/widgets.dart';
 import 'package:http/http.dart' as http;
@@ -66,43 +64,6 @@ class CenterView extends ConsumerWidget {
               ),
             ),
           ),
-          // filtering.filtering
-          //     ? Positioned(
-          //         top: 50,
-          //         left: 0,
-          //         child: FilterOptions(
-          //             filteringNotifier: _filteringNotifier,
-          //             options: const [
-          //               {
-          //                 "name": "Creation Date",
-          //                 "options": [
-          //                   "last 30 days",
-          //                   "last 3 months",
-          //                   "last 6 months",
-          //                   "last year",
-          //                   "all time"
-          //                 ]
-          //               },
-          //               {
-          //                 "name": "Status",
-          //                 "options": [
-          //                   "active",
-          //                   "production",
-          //                   "planning",
-          //                   "development"
-          //                 ]
-          //               },
-          //               {
-          //                 "name": "Field",
-          //                 "options": [
-          //                   "tech",
-          //                   "car",
-          //                   "entertainment",
-          //                 ]
-          //               },
-          //             ]),
-          //       )
-          //     : const SizedBox(),
           DynamicCreateButton(
             filteringNotifier: _filteringNotifier,
             choice: choice,
@@ -114,9 +75,6 @@ class CenterView extends ConsumerWidget {
               choice: choice,
             ),
           ),
-          // CenterViewTile(
-          //   choice: choice,
-          // ),
         ],
       ),
     );
@@ -144,19 +102,24 @@ class DescriptionToggleNotifier extends ChangeNotifier {
       Map<String?, dynamic>? userData, String orgName) async {
     final jsonData = json.encode(
       {
-        "user_data": userData,
+        "email": userData!['email'],
         "org_name": orgName,
       },
     );
+    print(jsonData);
     final resp = await http.post(
-      Uri.parse('http://127.0.0.1:8000/user/${userData!['email']}'),
+      Uri.parse('http://127.0.0.1:8000/userpoo/${userData['email']}/$orgName/'),
+      // Uri.parse('http://127.0.0.1:8000/userpoo/'),
       body: jsonData,
     );
 
     final String msg = json.decode(resp.body)["msg"];
+    print("Message: $msg");
 
     if (msg == "") {
+      print("Got into msg = ''");
       _userJoinedOrg = true;
+      notifyListeners();
       return;
     }
 
@@ -194,7 +157,7 @@ class CenterViewTile extends ConsumerWidget {
       items = choice.rs["msg"];
     }
 
-    if (items == null) {
+    if (items == null || itemCount == 0) {
       return const SizedBox();
     } else {
       return ListView.builder(
@@ -202,30 +165,32 @@ class CenterViewTile extends ConsumerWidget {
         itemBuilder: (BuildContext context, int idx) {
           Map<String, dynamic> data = {};
           if (choice.choice == SideBarChoice.projects) {
-            try {
-              data = {
-                "id": items![idx][0],
-                "name": items[idx][1],
-                "description": items[idx][2],
-                "dueData": items[idx][3],
-                "creationDate": items[idx][4],
-                "status": items[idx][5],
-                "developers": items[idx][6],
-              };
-            } catch (e) {
-              data = {};
-            }
+            data = {
+              "id": items![idx][0],
+              "proj_name": items[idx][1],
+              "description": items[idx][2],
+              "dueDate": items[idx][3],
+              "creationDate": items[idx][4],
+              "status": items[idx][5],
+              "developers": items[idx][6],
+            };
           } else if (choice.choice == SideBarChoice.orgs) {
-            try {
-              data = {
-                "name": items![idx][0],
-                "field": items[idx][1],
-                "description": items[idx][2],
-                "developers": items[idx][3],
-              };
-            } catch (e) {
-              data = {};
-            }
+            data = {
+              "org_name": items![idx][0],
+              "field": items[idx][1],
+              "description": items[idx][2],
+              "developers": items[idx][3],
+            };
+          } else if (choice.choice == SideBarChoice.tasks) {
+            data = {
+              "task_name": items![idx][0],
+              "description": items[idx][1],
+              "developer": items[idx][2],
+              "project_id": items[idx][3],
+              "organization": items[idx][4],
+              "dueDate": items[idx][5],
+              "status": items[idx][6],
+            };
           }
           return Tile(data: data, choice: choice);
         },
@@ -253,9 +218,13 @@ class Tile extends ConsumerWidget {
     final status = ref.watch(_toggleDescriptionProvider);
     final userD = InheritedLoginProvider.of(context).userData;
 
-    if (userD != null && data != {}) {
-      status.isPartOfOrg(userD, data["name"]);
+    if (userD != null &&
+        data["org_name"] != null &&
+        choice.choice == SideBarChoice.orgs) {
+      status.isPartOfOrg(userD, data["org_name"]);
     }
+
+    print(data);
 
     List<Widget> descriptionItems = List.generate(10, (idx) => Container());
 
@@ -264,7 +233,7 @@ class Tile extends ConsumerWidget {
         Container(
           margin: const EdgeInsets.symmetric(horizontal: 5),
           height: 50,
-          width: 100,
+          width: 120,
           child: Column(
             mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.center,
@@ -290,6 +259,33 @@ class Tile extends ConsumerWidget {
       );
     }
 
+    return TileItems(
+        status: status,
+        choice: choice,
+        data: data,
+        userD: userD,
+        descriptionItems: descriptionItems);
+  }
+}
+
+class TileItems extends StatelessWidget {
+  const TileItems({
+    Key? key,
+    required this.status,
+    required this.choice,
+    required this.data,
+    required this.userD,
+    required this.descriptionItems,
+  }) : super(key: key);
+
+  final DescriptionToggleNotifier status;
+  final SideBarChoiceNotifier choice;
+  final Map<String, dynamic> data;
+  final Map<String?, dynamic>? userD;
+  final List<Widget> descriptionItems;
+
+  @override
+  Widget build(BuildContext context) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 100),
       height: status.open ? 200 : 100,
@@ -332,7 +328,11 @@ class Tile extends ConsumerWidget {
                     width: 200,
                     child: Center(
                       child: Text(
-                        data["name"],
+                        choice.choice == SideBarChoice.projects
+                            ? data["proj_name"]
+                            : choice.choice == SideBarChoice.orgs
+                                ? data["org_name"]
+                                : data["task_name"],
                         style: GoogleFonts.montserrat(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -341,15 +341,17 @@ class Tile extends ConsumerWidget {
                     ),
                   ),
                 ),
-                Expanded(
-                  flex: 1,
-                  child: JoinLeaveBtn(
-                    status: status,
-                    choice: choice,
-                    userD: userD,
-                    data: data,
-                  ),
-                ),
+                choice.choice != SideBarChoice.tasks
+                    ? Expanded(
+                        flex: 1,
+                        child: JoinLeaveBtn(
+                          status: status,
+                          choice: choice,
+                          userD: userD,
+                          data: data,
+                        ),
+                      )
+                    : const SizedBox(),
                 Expanded(
                   flex: 1,
                   child: Container(
@@ -368,24 +370,33 @@ class Tile extends ConsumerWidget {
                           );
                           return;
                         }
+                        if (data["org_name"] == null) {
+                          data["org_name"] = "";
+                        }
 
                         var resp;
                         if (choice.choice == SideBarChoice.projects) {
                           resp = await http.post(
                             Uri.parse(
-                                'http://127.0.0.1:8000/delete_project/?email=${userD!['email']}&project_id=${data['id']}'),
-                            // body: jsonData,
+                              'http://127.0.0.1:8000/delete_project/?email=${userD!['email']}&project_id=${data['id']}',
+                            ),
                           );
                         } else if (choice.choice == SideBarChoice.orgs) {
                           resp = await http.post(
                             Uri.parse(
-                                'http://127.0.0.1:8000/delete_org/?email=${userD!['email']}&org_name=${data['name']}'),
+                              'http://127.0.0.1:8000/delete_org/?email=${userD!['email']}&org_name=${data['org_name']}',
+                            ),
+                          );
+                        } else if (choice.choice == SideBarChoice.tasks) {
+                          resp = await http.post(
+                            Uri.parse(
+                              'http://127.0.0.1:8000/delete_task/email=${userD!['email']}&task_id=${data['id']}',
+                            ),
                           );
                         }
                         final body = json.decode(resp.body);
 
                         if (body["msg"] == "") {
-                          status.userJoinedOrg = true;
                           InheritedLoginProvider.of(context).update();
                         } else {
                           showDialog(
@@ -465,7 +476,7 @@ class JoinLeaveBtn extends StatelessWidget {
           } else if (choice.choice == SideBarChoice.orgs) {
             resp = await http.post(
               Uri.parse(
-                  'http://127.0.0.1:8000/add_employee/?email=${userD!['email']}&org_name=${data['name']}'),
+                  'http://127.0.0.1:8000/add_employee/?email=${userD!['email']}&org_name=${data['org_name']}'),
             );
           }
           final msg = json.decode(resp.body)["msg"];

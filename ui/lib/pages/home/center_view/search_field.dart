@@ -4,7 +4,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:ui/pages/home/center_view/fetch.dart';
 import 'package:ui/pages/home/center_view/filter_button_notifier.dart';
-import 'package:ui/pages/home/center_view/projects_view.dart';
 import 'package:ui/pages/home/home.dart';
 import 'package:ui/pages/org/create_org.dart';
 import 'package:ui/pages/projects/create_project.dart';
@@ -35,6 +34,9 @@ class SearchField2 extends StatefulHookConsumerWidget {
     } else if (choice.choice == SideBarChoice.orgs) {
       url = Uri.parse('http://127.0.0.1:8000/orgs/');
       jsonData = json.encode({"org_name": teController.text});
+    } else if (choice.choice == SideBarChoice.tasks) {
+      url = Uri.parse('http://127.0.0.1:8000/tasks/');
+      jsonData = json.encode({"title": teController.text});
     } else {
       return;
     }
@@ -118,7 +120,6 @@ class DynamicCreateButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final filtering = ref.watch(filteringNotifier);
     return Align(
       alignment: Alignment.topRight,
       child: SizedBox(
@@ -130,11 +131,11 @@ class DynamicCreateButton extends ConsumerWidget {
           margin: const EdgeInsets.all(0),
           onTap: () {
             switch (choice.choice) {
-              case SideBarChoice.orgs:
-                Navigator.pushNamed(context, CreateOrgPage.id);
-                break;
               case SideBarChoice.projects:
                 Navigator.pushNamed(context, CreateProjectPage.id);
+                break;
+              case SideBarChoice.orgs:
+                Navigator.pushNamed(context, CreateOrgPage.id);
                 break;
               case SideBarChoice.tasks:
                 Navigator.pushNamed(context, CreateTaskPage.id);

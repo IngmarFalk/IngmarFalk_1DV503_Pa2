@@ -33,19 +33,19 @@ ROUTES = {
     "login": "/login/",
     "register": "/register/",
     "delete_user": "/delete_user/",
-    "user": "/user/",
-    "projects": "/user/{username}/projects/",
-    "create_project": "/user/{username}/create_project/",
-    "alter_project": "/alter_project/",
+    "create_project": "/create_project/",
     "delete_project": "/delete_project/",
-    "user_part_of_project": "user/{email}/",
+    "user_part_of_project": "/userpop/",
     "add_developer": "/add_developer/",
     "get_projects": "/projects/",
-    "create_org": "/user/{username}/create_org",
-    "delete_org": "/user/{username}/delete_org",
+    "create_org": "/create_org/",
+    "delete_org": "/delete_org/",
     "get_orgs": "/orgs/",
-    "user_part_of_org": "/user/{email}/",
+    "user_part_of_org": "/userpoo/{email}/{org_name}/",
     "add_employee": "/add_employee/",
+    "get_tasks": "/tasks/",
+    "create_task": "/create_task/",
+    "delete_task": "/delete_task/",
 }
 
 DB_MANAGER = init_db()
@@ -264,14 +264,15 @@ async def add_developer(
                 "email": email,
                 "project_id": project_id,
             }
-        )
+        ),
+        *(email, project_id),
     )
 
     return {"msg": ""}
 
 
 @app.post(ROUTES["create_project"])
-async def create_project(project_data: dict[Any, Any], username: str) -> dict[Any, Any]:
+async def create_project(project_data: dict[Any, Any], email: str) -> dict[Any, Any]:
     """
     Takes the project data as input and initializes a new project with that data after
     ensuring there doesnt exists a project with the same name for this exact same
@@ -279,18 +280,49 @@ async def create_project(project_data: dict[Any, Any], username: str) -> dict[An
     initiales him as the initial project leader.
     """
 
+    try:
+        _ = project_data["status"]
+    except KeyError:
+        project_data["status"] = "initial"
+
+    print(project_data)
+
     if not await check_for_project(project_data):
         DB_MANAGER.use()
         DB_MANAGER.query(ProjM().projects.insert(project_data), *project_data.values())
+        print(DB_MANAGER.query_result)
+        org_exists = await check_for_org({"name": project_data["organization"]})
+        if not org_exists:
+            await create_org(
+                org_data={"name": project_data["organization"], "field": ""},
+                email=email,
+            )
+        DB_MANAGER.query(
+            f"""
+            SELECT id 
+            FROM projects 
+            WHERE name = '{project_data["name"]}' 
+            AND organization = '{project_data["organization"]}';
+            """
+        )
+        try:
+            print(DB_MANAGER.query_result)
+            id: int = DB_MANAGER.query_result[0][0]
+        except KeyError:
+            return {"msg": "Failed to create Project"}
         DB_MANAGER.query(
             ProjM().projectleaders.insert(
                 {
-                    "username": username,
-                    "project": project_data["name"],
+                    "email": email,
+                    "project_id": id,
                     "organization": project_data["organization"],
                 },
             ),
-            *[username, project_data["name"], project_data["organization"]],
+            *[
+                email,
+                id,
+                project_data["organization"],
+            ],
         )
         return {"msg": ""}
 
@@ -310,8 +342,8 @@ async def delete_project(email: str, project_id: int) -> dict[Any, Any]:
     DB_MANAGER.use()
 
     "First we need to check wether user has the authority to delete project"
-    auth = check_user_authority(email, project_id)
-    if not auth["projectleader"] and not auth["admin"]:  # type: ignore
+    auth: dict[str, bool] = await check_user_authority(email, project_id)
+    if not auth["projectleader"] and not auth["admin"] and not auth["root"]:
         return {"msg": "You are not authorized to delete this project"}
 
     DB_MANAGER.query(f"DELETE FROM projects WHERE id = {project_id};")
@@ -325,14 +357,23 @@ async def delete_project(email: str, project_id: int) -> dict[Any, Any]:
 
 
 async def check_user_authority(
-    email: str, project_id: Any = None, org_name: Any = None
-) -> dict[str, Any]:
+    email: str,
+    project_id: Any = None,
+    org_name: Any = None,
+) -> dict[str, bool]:
     resp: dict[str, Any] = {
         "admin": False,
         "projectleader": False,
+        "root": False,
     }
     DB_MANAGER.use()
-    "First, check if user is admin for organization"
+
+    if email == "root@root":
+        resp["root"] = True
+        resp["projectleader"] = True
+        resp["admin"] = True
+        return resp
+
     if org_name:
         DB_MANAGER.query(
             f"""
@@ -391,30 +432,28 @@ async def get_orgs(org_name: dict[str, Any]) -> dict[str, Any]:
 
 
 @app.post(ROUTES["user_part_of_org"])
-async def user_part_of_org(user_data: dict[Any, Any], org_name: str) -> dict[str, bool]:
+async def user_part_of_org(email: str, org_name: str) -> dict[str, Any]:
     """"""
     DB_MANAGER.use()
+    print(email, org_name)
     DB_MANAGER.query(
         f"""
-        SELECT users.email
-        FROM developers devs
-        INNER JOIN projects
-        ON devs.project_id = projects.id
-        LEFT JOIN users
-        ON devs.email = users.email
-        WHERE projects.organization = '{org_name}';
+        SELECT emp.email
+        FROM employees emp
+        INNER JOIN organizations org
+        ON emp.organization = org.name
+        WHERE emp.organization = '{org_name}' 
+        AND emp.email = '{email}';
     """
     )
-    if user_data["email"] == DB_MANAGER.query_result[0][0]:
-        return {"msg": True}
-    return {"msg": False}
-
-    # (SELECT COUNT(employees.email)
-    #     FROM developers devs
-    #     INNER JOIN projects
-    #     ON projects.id = devs.project_id
-    #     WHERE projects.organization = orgs.name
-    #     GROUP BY orgs.name) as devs
+    print(DB_MANAGER.query_result)
+    try:
+        if email == DB_MANAGER.query_result[0][0]:
+            print("returned True")
+            return {"msg": ""}
+    except IndexError as e:
+        return {"msg": "Error"}
+    return {"msg": "Error"}
 
 
 async def create_all_orgs_view() -> None:
@@ -448,7 +487,7 @@ async def check_for_org(org_data: dict[Any, Any]) -> bool:
 
 
 @app.post(ROUTES["create_org"])
-async def create_org(org_data: dict[Any, Any], username: str) -> dict[Any, Any]:
+async def create_org(org_data: dict[Any, Any], email: str) -> dict[Any, Any]:
     """"""
     if not await check_for_org(org_data):
         DB_MANAGER.use()
@@ -456,11 +495,11 @@ async def create_org(org_data: dict[Any, Any], username: str) -> dict[Any, Any]:
         DB_MANAGER.query(
             ProjM().admins.insert(
                 {
-                    "username": username,
+                    "email": email,
                     "organization": org_data["name"],
                 }
             ),
-            *(username, org_data["name"]),
+            *(email, org_data["name"]),
         )
     return {}
 
@@ -478,13 +517,15 @@ async def delete_org(email: str, org_name: str) -> dict[Any, Any]:
     DB_MANAGER.use()
 
     "First we need to check wether user has the authority to delete project"
-    auth = check_user_authority(email, org_name=org_name)
-    if not auth["admins"] == True:  # type: ignore
+    auth: dict[str, bool] = await check_user_authority(email, org_name=org_name)
+    print(email)
+
+    if not auth["admin"] and not auth["root"]:
         return {"msg": "You are not authorized to delete this organization"}
 
-    DB_MANAGER.query(f"DELETE FROM organizations WHERE name = {org_name}")
-    DB_MANAGER.query(f"DELETE FROM admins WHERE organization = {org_name}")
-    DB_MANAGER.query(f"DELETE FROM projectleaders WHERE organization = {org_name}")
+    DB_MANAGER.query(f"DELETE FROM organizations WHERE name = '{org_name}'")
+    DB_MANAGER.query(f"DELETE FROM admins WHERE organization = '{org_name}'")
+    DB_MANAGER.query(f"DELETE FROM projectleaders WHERE organization = '{org_name}'")
 
     return {"msg": ""}
 
@@ -519,3 +560,59 @@ async def add_employee(
     )
 
     return {"msg": ""}
+
+
+"+++++++++++++++++Tasks+++++++++++++++++"
+
+
+@app.post(ROUTES["create_task"])
+async def create_task(task_data: dict[Any, Any]) -> dict[Any, Any]:
+    """"""
+    try:
+        _ = task_data["status"]
+    except KeyError:
+        task_data["status"] = "initial"
+
+    DB_MANAGER.use()
+    DB_MANAGER.query(ProjM().tasks.insert(task_data), *task_data.values())
+    return {"msg": ""}
+
+
+@app.post(ROUTES["get_tasks"])
+async def get_tasks(task_title: dict[Any, Any]) -> dict[Any, Any]:
+    """"""
+    await create_all_tasks_view()
+    print("Created all tasks")
+    DB_MANAGER.use()
+    DB_MANAGER.query(
+        f"""
+        SELECT *
+        FROM all_tasks
+        WHERE title LIKE '%{task_title['title']}'
+        """
+    )
+    return {"msg": DB_MANAGER.query_result}
+
+
+async def create_all_tasks_view() -> None:
+    """Create a view of all the tasks within the database"""
+    DB_MANAGER.use()
+    q = """
+    CREATE OR REPLACE VIEW all_tasks 
+    AS SELECT 
+        title, 
+        description, 
+        developer,
+        project_id,
+        organization,
+        due_date,
+        status
+    FROM tasks;
+    """
+    DB_MANAGER.query(q)
+
+
+@app.post(ROUTES["delete_task"])
+async def delete_task(email: str, task_id: int) -> dict[Any, Any]:
+    """"""
+    return {}

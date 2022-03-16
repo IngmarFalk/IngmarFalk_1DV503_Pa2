@@ -60,6 +60,8 @@ class CustomForm extends HookConsumerWidget {
                   String jsonData = json.encode(data);
                   await _saveAndValidate();
 
+                  print(jsonData);
+
                   var resp = await http.post(
                     Uri.parse(urls[idx]),
                     body: jsonData,

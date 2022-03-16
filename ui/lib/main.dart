@@ -40,6 +40,7 @@ class _InheritedLoginProviderWrapperState
 
   void update() {
     setState(() {
+      isLoggedIn = false;
       isLoggedIn = true;
     });
   }
@@ -97,7 +98,8 @@ class App extends ConsumerWidget {
           Home.id: (context) => Home(),
           LoginScreen.id: (context) => const LoginScreen(),
           RegisterScreen.id: (context) => const RegisterScreen(),
-          CreateProjectPage.id: (context) => const CreateProjectPage(),
+          CreateProjectPage.id: (context) => CreateProjectPage(
+              email: InheritedLoginProvider.of(context).userData?["email"]),
           CreateOrgPage.id: (context) => const CreateOrgPage(),
           CreateTaskPage.id: (context) => const CreateTaskPage()
         },

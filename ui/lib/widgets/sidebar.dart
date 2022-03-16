@@ -62,7 +62,11 @@ class SideBar extends ConsumerWidget {
               state.isLoggedIn
                   ? SideBarItem(
                       text: "T A S K S",
-                      onTap: () {},
+                      onTap: () {
+                        choice.choice = SideBarChoice.tasks;
+                        teController.text = " ";
+                        teController.text = "";
+                      },
                     )
                   : const SizedBox(),
             ],
@@ -74,7 +78,6 @@ class SideBar extends ConsumerWidget {
               onTap: () {
                 if (state.isLoggedIn) {
                   state.setIsLoggedIn(false, {});
-                  Navigator.pop(context);
                 } else {
                   Navigator.pushNamed(context, LoginScreen.id);
                 }

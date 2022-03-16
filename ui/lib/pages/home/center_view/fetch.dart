@@ -15,15 +15,12 @@ Future<void> fetch({
   } else if (choice.choice == SideBarChoice.orgs) {
     url = Uri.parse('http://127.0.0.1:8000/orgs/');
     jsonData = json.encode({"org_name": teController.text});
+  } else if (choice.choice == SideBarChoice.tasks) {
+    url = Uri.parse('http://127.0.0.1:8000/tasks/');
+    jsonData = json.encode({"title": teController.text});
   } else {
     return;
   }
-  // var url = choice.choice == SideBarChoice.projects
-  //     ? Uri.parse('http://127.0.0.1:8000/projects/')
-  //     : Uri.parse('http://127.0.0.1:8000/orgs/');
-  // String jsonData = choice.choice == SideBarChoice.projects
-  //     ? json.encode({"project_name": teController.text})
-  //     : json.encode({"org_name": teController.text});
 
   var resp = await http.post(
     url,
@@ -31,10 +28,5 @@ Future<void> fetch({
     headers: {"Content-type": "application/json"},
   );
 
-  // await Future.delayed(Duration(milliseconds: 2000));
-
   choice.rs = json.decode(resp.body);
-  // for (var i = 0; i < choice.rs["msg"].length; i++) {
-  //   print(choice.rs["msg"][i]);
-  // }
 }
