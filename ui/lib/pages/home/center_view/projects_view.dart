@@ -1,15 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ui/main.dart';
-import 'package:ui/pages/home/center_view/fetch.dart';
 import 'package:ui/pages/home/center_view/filter_button_notifier.dart';
 import 'package:ui/pages/home/center_view/filter_options.dart';
 import 'package:ui/pages/home/center_view/search_field.dart';
 import 'package:ui/pages/home/home.dart';
+import 'package:ui/pages/projects/create_project.dart';
 import 'package:ui/theme/colors.dart';
 import 'package:ui/widgets/widgets.dart';
 import 'package:http/http.dart' as http;
@@ -53,9 +52,9 @@ class CenterView extends ConsumerWidget {
               height: 50,
               child: Row(
                 children: [
-                  FilterButton(
-                    filteringNotifier: _filteringNotifier,
-                  ),
+                  // FilterButton(
+                  //   filteringNotifier: _filteringNotifier,
+                  // ),
                   Expanded(
                     child: SearchField2(
                       teController: teController,
@@ -67,46 +66,47 @@ class CenterView extends ConsumerWidget {
               ),
             ),
           ),
-          filtering.filtering
-              ? Positioned(
-                  top: 50,
-                  left: 0,
-                  child: FilterOptions(
-                      filteringNotifier: _filteringNotifier,
-                      options: const [
-                        {
-                          "name": "Creation Date",
-                          "options": [
-                            "last 30 days",
-                            "last 3 months",
-                            "last 6 months",
-                            "last year",
-                            "all time"
-                          ]
-                        },
-                        {
-                          "name": "Status",
-                          "options": [
-                            "active",
-                            "production",
-                            "planning",
-                            "development"
-                          ]
-                        },
-                        {
-                          "name": "Field",
-                          "options": [
-                            "tech",
-                            "car",
-                            "entertainment",
-                          ]
-                        },
-                      ]),
-                )
-              : const SizedBox(),
-          // SearchButton(
-          //   filteringNotifier: _filteringNotifier,
-          // ),
+          // filtering.filtering
+          //     ? Positioned(
+          //         top: 50,
+          //         left: 0,
+          //         child: FilterOptions(
+          //             filteringNotifier: _filteringNotifier,
+          //             options: const [
+          //               {
+          //                 "name": "Creation Date",
+          //                 "options": [
+          //                   "last 30 days",
+          //                   "last 3 months",
+          //                   "last 6 months",
+          //                   "last year",
+          //                   "all time"
+          //                 ]
+          //               },
+          //               {
+          //                 "name": "Status",
+          //                 "options": [
+          //                   "active",
+          //                   "production",
+          //                   "planning",
+          //                   "development"
+          //                 ]
+          //               },
+          //               {
+          //                 "name": "Field",
+          //                 "options": [
+          //                   "tech",
+          //                   "car",
+          //                   "entertainment",
+          //                 ]
+          //               },
+          //             ]),
+          //       )
+          //     : const SizedBox(),
+          DynamicCreateButton(
+            filteringNotifier: _filteringNotifier,
+            choice: choice,
+          ),
           Container(
             margin: const EdgeInsets.only(top: 52),
             child: CenterViewTile(
@@ -222,26 +222,12 @@ class CenterViewTile extends ConsumerWidget {
                 "field": items[idx][1],
                 "description": items[idx][2],
                 "developers": items[idx][3],
-
-                // "id": items![idx][0],
-                // "name": items[idx][1],
-                // "description": items[idx][2],
-                // "dueData": items[idx][3],
-                // "creationDate": items[idx][4],
-                // "status": items[idx][5],
-                // "developers": items[idx][6],
               };
             } catch (e) {
               data = {};
             }
-            // data = {
-            //   "name": items![idx][0],
-            //   "field": items[idx][1],
-            //   "description": items[idx][2],
-            //   "developers": items[idx][3],
-            // };
           }
-          return Tile(data: data);
+          return Tile(data: data, choice: choice);
         },
       );
     }
@@ -252,9 +238,11 @@ class Tile extends ConsumerWidget {
   Tile({
     Key? key,
     required this.data,
+    required this.choice,
   }) : super(key: key);
 
   final Map<String, dynamic> data;
+  final SideBarChoiceNotifier choice;
   final _toggleDescriptionProvider =
       ChangeNotifierProvider<DescriptionToggleNotifier>(
     (ref) => DescriptionToggleNotifier(),
@@ -355,12 +343,19 @@ class Tile extends ConsumerWidget {
                 ),
                 Expanded(
                   flex: 1,
+                  child: JoinLeaveBtn(
+                    status: status,
+                    choice: choice,
+                    userD: userD,
+                    data: data,
+                  ),
+                ),
+                Expanded(
+                  flex: 1,
                   child: Container(
                     height: 70,
-                    padding: const EdgeInsets.only(right: 20.0, top: 7),
+                    padding: const EdgeInsets.only(right: 20, top: 7),
                     child: SideBarItem(
-                      text: status.userJoinedOrg ? "L E A V E" : "J O I N",
-                      // text: "J O I N",
                       onTap: () async {
                         if (InheritedLoginProvider.of(context).isLoggedIn ==
                             false) {
@@ -374,37 +369,36 @@ class Tile extends ConsumerWidget {
                           return;
                         }
 
-                        final jsonData = json.encode(
-                          {
-                            "username": InheritedLoginProvider.of(context)
-                                .userData!["email"],
-                            "org_name": data["name"],
-                          },
-                        );
+                        var resp;
+                        if (choice.choice == SideBarChoice.projects) {
+                          resp = await http.post(
+                            Uri.parse(
+                                'http://127.0.0.1:8000/delete_project/?email=${userD!['email']}&project_id=${data['id']}'),
+                            // body: jsonData,
+                          );
+                        } else if (choice.choice == SideBarChoice.orgs) {
+                          resp = await http.post(
+                            Uri.parse(
+                                'http://127.0.0.1:8000/delete_org/?email=${userD!['email']}&org_name=${data['name']}'),
+                          );
+                        }
+                        final body = json.decode(resp.body);
 
-                        final resp = await http.post(
-                          Uri.parse(
-                              'http://127.0.0.1:8000/add_employee/?email=${userD!['email']}&org_name=${data['name']}'),
-                          // body: jsonData,
-                        );
-
-                        final msg = json.decode(resp.body)["msg"];
-
-                        if (msg == "") {
-                          print("True think");
+                        if (body["msg"] == "") {
                           status.userJoinedOrg = true;
+                          InheritedLoginProvider.of(context).update();
                         } else {
                           showDialog(
                             context: context,
                             builder: (BuildContext context) {
-                              return const ErrorPopUp(
-                                msg: "Couldnt add user to organization",
-                              );
+                              return ErrorPopUp(msg: body["msg"]);
                             },
                           );
                         }
                       },
+                      text: "D E L E T E",
                       fontSize: 10,
+                      color: kcDarkBlue,
                     ),
                   ),
                 ),
@@ -429,89 +423,73 @@ class Tile extends ConsumerWidget {
   }
 }
 
-class CreateButton extends ConsumerWidget {
-  final Duration duration;
-  final Color backgroundColor;
-  final EdgeInsets padding;
-  final BorderRadius? borderRadius;
-  const CreateButton({
+class JoinLeaveBtn extends StatelessWidget {
+  const JoinLeaveBtn({
     Key? key,
-    this.duration = const Duration(milliseconds: 200),
-    this.backgroundColor = kcIceBlue,
-    this.padding = const EdgeInsets.all(5),
-    this.borderRadius,
+    required this.status,
+    required this.choice,
+    required this.userD,
+    required this.data,
   }) : super(key: key);
 
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Center(
-      child: InkWell(
-        hoverColor: kcMedBlue,
-        onTap: () {
-          Navigator.pushNamed(context, CreateProjectPage.id);
-        },
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            AnimatedContainer(
-              duration: duration,
-              padding: padding,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(5),
-              ),
-              child: const Icon(Icons.add_box),
-            ),
-            const SizedBox(height: 5),
-            SelectableText(
-              "C R E A T E   P R O J E C T",
-              style: GoogleFonts.montserrat(
-                fontSize: 10,
-              ),
-            )
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class CreateProjectPage extends ConsumerWidget {
-  static const String id = Home.id + "/create_project";
-
-  const CreateProjectPage({Key? key}) : super(key: key);
+  final DescriptionToggleNotifier status;
+  final SideBarChoiceNotifier choice;
+  final Map<String?, dynamic>? userD;
+  final Map<String, dynamic> data;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor: kcIceBlue.withOpacity(.17),
-        body: Center(
-          child: SizedBox(
-            width: 550,
-            child: CustomForm(
-              type: FormType.createProject,
-              fields: {
-                "project_name": CustomTextField(
-                  hintText: "project name",
-                  prefixIcon: const Icon(Icons.house),
-                ),
-                "due_date": CustomTextField(
-                  hintText: "due data: YYYY-MM-DD",
-                  prefixIcon: const Icon(Icons.date_range),
-                ),
-                "description": CustomTextField(
-                  height: 200,
-                  hintText: "description",
-                  prefixIcon: const Icon(Icons.padding_outlined),
-                  maxLines: 7,
-                ),
+  Widget build(BuildContext context) {
+    return Container(
+      height: 70,
+      padding: const EdgeInsets.only(right: 20.0, top: 7),
+      child: SideBarItem(
+        text: status.userJoinedOrg ? "L E A V E" : "J O I N",
+        onTap: () async {
+          if (InheritedLoginProvider.of(context).isLoggedIn == false) {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return const ErrorPopUp(msg: "You need to be logged in");
               },
-              urls: const ['http://127.0.0.1:8000/create_project/'],
-              buttonTexts: const ["C R E A T E"],
-            ),
-          ),
-        ),
+            );
+            return;
+          }
+
+          var resp;
+          if (choice.choice == SideBarChoice.projects) {
+            resp = await http.post(
+              Uri.parse(
+                  'http://127.0.0.1:8000/add_developer/?email=${userD!['email']}&project_id=${data['id']}'),
+              // body: jsonData,
+            );
+          } else if (choice.choice == SideBarChoice.orgs) {
+            resp = await http.post(
+              Uri.parse(
+                  'http://127.0.0.1:8000/add_employee/?email=${userD!['email']}&org_name=${data['name']}'),
+            );
+          }
+          final msg = json.decode(resp.body)["msg"];
+
+          if (msg == "") {
+            status.userJoinedOrg = true;
+            InheritedLoginProvider.of(context).update();
+          } else {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return ErrorPopUp(
+                  msg: "Couldnt add user to" +
+                      (choice.choice == SideBarChoice.orgs
+                          ? "organization"
+                          : choice.choice == SideBarChoice.projects
+                              ? "project"
+                              : "task"),
+                );
+              },
+            );
+          }
+        },
+        fontSize: 10,
       ),
     );
   }

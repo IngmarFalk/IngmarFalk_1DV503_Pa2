@@ -34,24 +34,24 @@ def init_db() -> DBManager:
             db.query(
                 ProjM().admins.insert(
                     {
-                        "username": "",
+                        "email": "",
                         "organization": "",
                     }
                 ),
-                *(admin["username"], rd.choice(td.torgs)["name"])
+                *(admin["email"], rd.choice(td.torgs)["name"])
             )
 
         for pl in td.tusers[:6]:
             db.query(
                 ProjM().projectleaders.insert(
                     {
-                        "username": "",
+                        "email": "",
                         "project_id": "",
                         "organization": "",
                     }
                 ),
                 *(
-                    pl["username"],
+                    pl["email"],
                     rd.choice(td.tprojects)["id"],
                     rd.choice(td.torgs)["name"],
                 )
@@ -61,11 +61,11 @@ def init_db() -> DBManager:
             db.query(
                 ProjM().developers.insert(
                     {
-                        "username": "",
+                        "email": "",
                         "project_id": "",
                     }
                 ),
-                *(dev["username"], rd.choice(td.tprojects)["id"])
+                *(dev["email"], rd.choice(td.tprojects)["id"])
             )
 
     return db

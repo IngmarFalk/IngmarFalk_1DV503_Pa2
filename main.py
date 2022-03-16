@@ -36,10 +36,10 @@ ROUTES = {
     "user": "/user/",
     "projects": "/user/{username}/projects/",
     "create_project": "/user/{username}/create_project/",
-    "alter_project": "/user/{username}/alter_project/",
-    "delete_project": "/user/{username}/delete_project/",
+    "alter_project": "/alter_project/",
+    "delete_project": "/delete_project/",
     "user_part_of_project": "user/{email}/",
-    "add_developer_to_project": "user/{username}/{project_id}",
+    "add_developer": "/add_developer/",
     "get_projects": "/projects/",
     "create_org": "/user/{username}/create_org",
     "delete_org": "/user/{username}/delete_org",
@@ -134,18 +134,6 @@ async def register(register_data: dict[Any, Any]) -> dict[Any, Any]:
         return {"msg": "User already exists"}
 
 
-"-------------Add-------------"
-
-
-# @app.post(ROUTES[""])
-# async def add_user(userData: dict[Any, Any], table: str) -> dict[Any, Any]:
-#     """"""
-#     return {}
-
-
-"-------------Delete-------------"
-
-
 @app.post(ROUTES["delete_user"])
 async def delete_user(user_data: dict[Any, Any], tables: list[str]) -> str:
     "Deletes a user from ALL the tables in the database where he/she exists"
@@ -160,8 +148,8 @@ async def delete_user(user_data: dict[Any, Any], tables: list[str]) -> str:
 
     q = f"""DELETE users, {', '.join([table for table in tables])} FROM users"""
     for table in tables:
-        q += " INNER JOIN " + table + " ON " + table + ".username = users.username\n"
-    q += f" WHERE users.username = '{str(user_data['username'])}';"
+        q += " INNER JOIN " + table + " ON " + table + ".email = users.email\n"
+    q += f" WHERE users.email = '{str(user_data['email'])}';"
     DB_MANAGER.query(q)
 
     print(DB_MANAGER.query_result)
@@ -251,9 +239,9 @@ async def check_for_project(project_data: dict[Any, Any]) -> bool:
     return True
 
 
-@app.post(ROUTES["add_developer_to_project"])
-async def add_developer_to_projects(
-    user_data: dict[Any, Any],
+@app.post(ROUTES["add_developer"])
+async def add_developer(
+    email: str,
     project_id: int,
 ) -> dict[Any, Any]:
     """"""
@@ -263,23 +251,23 @@ async def add_developer_to_projects(
     DB_MANAGER.query(
         f"""SELECT * 
         FROM developers 
-        WHERE username = '{user_data['username']}'
+        WHERE email = '{email}'
         AND project_id = '{project_id}'"""
     )
 
-    if len(DB_MANAGER.query_result) == 0:
-        return {"msg": ""}
+    if len(DB_MANAGER.query_result) != 0:
+        return {"msg": "developer already in project"}
 
     DB_MANAGER.query(
         ProjM().developers.insert(
             {
-                "username": user_data["username"],
+                "email": email,
                 "project_id": project_id,
             }
         )
     )
 
-    return {"msg": "User added"}
+    return {"msg": ""}
 
 
 @app.post(ROUTES["create_project"])
@@ -310,7 +298,7 @@ async def create_project(project_data: dict[Any, Any], username: str) -> dict[An
 
 
 @app.post(ROUTES["delete_project"])
-async def delete_project(project_data: dict[Any, Any], username: str) -> dict[Any, Any]:
+async def delete_project(email: str, project_id: int) -> dict[Any, Any]:
     """
     Takes in the information about the project to be deleted as well as
     the user who initiated the action. Then it calls a query to check wether
@@ -320,8 +308,68 @@ async def delete_project(project_data: dict[Any, Any], username: str) -> dict[An
     Furthermore it will alos remove all tasks for this project.
     """
     DB_MANAGER.use()
-    DB_MANAGER.query("SELECT * FROM ")
-    return {}
+
+    "First we need to check wether user has the authority to delete project"
+    auth = check_user_authority(email, project_id)
+    if not auth["projectleader"] and not auth["admin"]:  # type: ignore
+        return {"msg": "You are not authorized to delete this project"}
+
+    DB_MANAGER.query(f"DELETE FROM projects WHERE id = {project_id};")
+    DB_MANAGER.query(f"DELETE FROM projectleaders WHERE project_id = {project_id};")
+    DB_MANAGER.query(f"DELETE FROM developers WHERE project_id = {project_id};")
+
+    return {"msg": ""}
+
+
+"++++++++++++++++++++Organization/Project Table Apis+++++++++++++++++++"
+
+
+async def check_user_authority(
+    email: str, project_id: Any = None, org_name: Any = None
+) -> dict[str, Any]:
+    resp: dict[str, Any] = {
+        "admin": False,
+        "projectleader": False,
+    }
+    DB_MANAGER.use()
+    "First, check if user is admin for organization"
+    if org_name:
+        DB_MANAGER.query(
+            f"""
+        SELECT * 
+        FROM admins
+        WHERE admins.email = '{email}'
+        AND admins.name = '{org_name}';"""
+        )
+
+    if len(DB_MANAGER.query_result) != 0:
+        resp["admin"] = True
+
+    if project_id:
+        DB_MANAGER.query(
+            f"""
+        SELECT * 
+        FROM projectleaders pjl
+        WHERE pjl.email = '{email}'
+        AND pjl.project_id = '{project_id}';"""
+        )
+        if len(DB_MANAGER.query_result) != 0:
+            resp["projectleader"] = True
+
+        if not org_name:
+            DB_MANAGER.query(
+                f"""
+        SELECT * 
+        FROM projects pj, admins 
+        WHERE pj.id = 3 
+        AND admins.email = '{email}' 
+        AND pj.organization = admins.organization;"""
+            )
+
+        if len(DB_MANAGER.query_result) != 0:
+            resp["admin"] = True
+
+    return resp
 
 
 "++++++++++++++++++++Organization Table Apis+++++++++++++++++++"
@@ -330,7 +378,7 @@ async def delete_project(project_data: dict[Any, Any], username: str) -> dict[An
 @app.post(ROUTES["get_orgs"])
 async def get_orgs(org_name: dict[str, Any]) -> dict[str, Any]:
     """"""
-    # await create_all_orgs_view()
+    await create_all_orgs_view()
     DB_MANAGER.use()
     DB_MANAGER.query(
         f"""
@@ -353,17 +401,20 @@ async def user_part_of_org(user_data: dict[Any, Any], org_name: str) -> dict[str
         INNER JOIN projects
         ON devs.project_id = projects.id
         LEFT JOIN users
-<<<<<<< HEAD
         ON devs.email = users.email
-=======
-        ON devs.username = users.username
->>>>>>> 0d760a2f2d73cfab1138721bccb09659da350756
         WHERE projects.organization = '{org_name}';
     """
     )
-    # if user_data['email'] == DB_MANAGER.query_result[0][0]:
-    #   return {"msg": True}
+    if user_data["email"] == DB_MANAGER.query_result[0][0]:
+        return {"msg": True}
     return {"msg": False}
+
+    # (SELECT COUNT(employees.email)
+    #     FROM developers devs
+    #     INNER JOIN projects
+    #     ON projects.id = devs.project_id
+    #     WHERE projects.organization = orgs.name
+    #     GROUP BY orgs.name) as devs
 
 
 async def create_all_orgs_view() -> None:
@@ -375,13 +426,12 @@ async def create_all_orgs_view() -> None:
         name, 
         field, 
         description, 
-        (SELECT COUNT(devs.username)
-            FROM developers devs 
-            INNER JOIN projects 
-            ON projects.id = devs.project_id 
-            WHERE projects.organization = orgs.name 
+        (SELECT COUNT(emps.email) 
+            FROM employees emps
+            WHERE emps.organization = orgs.name 
             GROUP BY orgs.name) as devs
-    FROM organizations orgs;"""
+    FROM organizations orgs;
+    """
     DB_MANAGER.query(q)
 
 
@@ -416,75 +466,27 @@ async def create_org(org_data: dict[Any, Any], username: str) -> dict[Any, Any]:
 
 
 @app.post(ROUTES["delete_org"])
-async def delete_org(org_data: dict[Any, Any], username: str) -> dict[Any, Any]:
+async def delete_org(email: str, org_name: str) -> dict[Any, Any]:
     """
-    Deletes the organization together with all its projects and tasks, as well as
-    removes all of its admins, developers and project leaders as well as all tasks related to
-    the organization from the database. This is done of course after checking the
-    user authority. This action can only be performed by admins of the organization.
+    Takes in the information about the organization to be deleted as well as
+    the user who initiated the action. Then it calls a query to check wether
+    the user has the authority to actually delete it, if so, the function will
+    call the appropriate query. After that this function will delete the organization
+    itself as well as all the project_leaders for this particular project.
+    Furthermore it will alos remove all tasks for this project.
     """
     DB_MANAGER.use()
 
-    "! THIS IS JUST MY THOUGHT PROCESS !"
+    "First we need to check wether user has the authority to delete project"
+    auth = check_user_authority(email, org_name=org_name)
+    if not auth["admins"] == True:  # type: ignore
+        return {"msg": "You are not authorized to delete this organization"}
 
-    "IDEA: USE INNER JOINS"
+    DB_MANAGER.query(f"DELETE FROM organizations WHERE name = {org_name}")
+    DB_MANAGER.query(f"DELETE FROM admins WHERE organization = {org_name}")
+    DB_MANAGER.query(f"DELETE FROM projectleaders WHERE organization = {org_name}")
 
-    dq = f"""
-    DELETE org, devs, admins, pls, pjs
-    FORM organizations as org
-    INNER JOIN projects as pjs ON org.name = pjs.organization
-    INNER JOIN projectleaders as pls ON pjs.id = pls.project_id
-    INNER JOIN tasks as pls ON pjs.id = pls.project_id
-    INNER JOIN admins ON org.name = admins.organization
-    WHERE org.name = '{org_data['name']};'
-    """
-
-    "So this works"
-    """
-    select *
-    from projects pjs 
-    inner join organizations orgs on pjs.organization = orgs.name 
-    inner join projectleaders pls on pjs.id = pls.project_id
-    INNER JOIN tasks ON pjs.id = pls.project_id 
-    where pjs.organization = 'VW';
-    """
-    """
-    INNER JOIN developers devs ON org.name = devs.organization
-    INNER JOIN admins ON org.name = admins.organization 
-    """
-
-    """
-    DELETE org, devs, admins, pls, pjs 
-    FROM organizations org 
-    INNER JOIN projects pjs ON org.name = pjs.organization 
-    INNER JOIN projectleaders pls ON pjs.id = pls.project_id 
-    INNER JOIN tasks ON pjs.id = pls.project_id 
-    INNER JOIN developers devs ON org.name = devs.organization
-    INNER JOIN admins ON org.name = admins.organization 
-    WHERE org.name = 'Google';
-    """
-
-    "----------------------"
-
-    "Step 1: Check wether the user has the authority to perform this action"
-    q1 = f"SELECT * FROM admins WHERE username = '{username}' AND organization = '{org_data['name']}'"
-    DB_MANAGER.query(q1)
-    if DB_MANAGER.query_result == 0:
-        return {"msg": "You dont have the authority to perform this action"}
-
-    "Step 2: Get all the organizations projects"
-    f"SELECT id FROM projects WHERE organization = '{org_data['name']}';"
-
-    "Step 3: Call 'delete_project' for for every item in the result."
-    if len(DB_MANAGER.query_result) > 0:
-        for project in DB_MANAGER.query_result:
-            await delete_project(
-                project_data={"id": project[0]},
-                username=username,
-            )
-
-    "Step 4: Delete all developers and admins"
-    return {}
+    return {"msg": ""}
 
 
 @app.post(ROUTES["add_employee"])

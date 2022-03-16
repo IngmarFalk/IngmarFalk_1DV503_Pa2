@@ -15,20 +15,9 @@ class SideBar extends ConsumerWidget {
     Key? key,
   }) : super(key: key);
 
-  // final Map<String, Function> sideBarItems = {
-  //   "O R G A N I Z A T I O N S":
-  //(SideBarChoiceNotifier choice) =>
-  //       choice.choice = SideBarChoice.orgs,
-  //   "P R O J E C T S": (SideBarChoiceNotifier choice) =>
-  //       choice.choice = SideBarChoice.projects,
-  //   "T A S K S": () {},
-  //   "M E S S A G E S": () {},
-  // };
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = InheritedLoginProvider.of(context);
-    print(state.isLoggedIn);
 
     return Container(
       margin: const EdgeInsets.all(10),
@@ -73,12 +62,6 @@ class SideBar extends ConsumerWidget {
               state.isLoggedIn
                   ? SideBarItem(
                       text: "T A S K S",
-                      onTap: () {},
-                    )
-                  : const SizedBox(),
-              state.isLoggedIn
-                  ? SideBarItem(
-                      text: "M E S S A G E S",
                       onTap: () {},
                     )
                   : const SizedBox(),

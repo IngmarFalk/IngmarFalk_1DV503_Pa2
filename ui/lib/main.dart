@@ -3,7 +3,10 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:ui/pages/home/center_view/projects_view.dart';
 import 'package:ui/pages/home/home.dart';
 import 'package:ui/pages/login/login.dart';
+import 'package:ui/pages/org/create_org.dart';
+import 'package:ui/pages/projects/create_project.dart';
 import 'package:ui/pages/register/register.dart';
+import 'package:ui/pages/tasks/create_task.dart';
 
 // const url = 'localhost:8000';
 // const url = 'http://192.168.1.136:8000/';
@@ -34,6 +37,12 @@ class _InheritedLoginProviderWrapperState
     extends State<InheritedLoginProviderWrapper> {
   Map<String?, dynamic>? userData;
   bool isLoggedIn = false;
+
+  void update() {
+    setState(() {
+      isLoggedIn = true;
+    });
+  }
 
   void setIsLoggedIn(bool val, Map<String?, dynamic> newUserData) {
     setState(() {
@@ -89,6 +98,8 @@ class App extends ConsumerWidget {
           LoginScreen.id: (context) => const LoginScreen(),
           RegisterScreen.id: (context) => const RegisterScreen(),
           CreateProjectPage.id: (context) => const CreateProjectPage(),
+          CreateOrgPage.id: (context) => const CreateOrgPage(),
+          CreateTaskPage.id: (context) => const CreateTaskPage()
         },
         initialRoute: Home.id,
       ),

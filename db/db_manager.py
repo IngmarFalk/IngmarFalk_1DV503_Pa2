@@ -34,16 +34,6 @@ class DBManager:
                 password=password,
             )
 
-            log.log(
-                level=log.INFO,
-                msg="Database connection established: "
-                + host
-                + ":"
-                + user
-                + ":"
-                + password,
-            )
-
             """Creating the connection and cursor"""
             self.csr = self.cnx.cursor()
             self.db = db
@@ -69,16 +59,8 @@ class DBManager:
         """Takes in a Sql statement as well as the arguments it needs and tries to execute it."""
         print(query, params)
         try:
-            log.info(
-                "Called query:\t"
-                + query
-                + " at "
-                + str(datetime.datetime.now())
-                + " with params:\t"
-                + str(params)
-            )
 
-            """ Executing query, storing results in query_result and committing changes. """
+            """Executing query, storing results in query_result and committing changes."""
             self.csr.execute(query, params)
             self.query_result = self.csr.fetchall()
             self.cnx.commit()
