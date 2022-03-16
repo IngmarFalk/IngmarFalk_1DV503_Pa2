@@ -327,6 +327,29 @@ async def delete_project(email: str, project_id: int) -> dict[Any, Any]:
     return {"msg": ""}
 
 
+@app.post(ROUTES["user_part_of_project"])
+async def user_part_of_project(email: str, project_id: int) -> dict[Any, Any]:
+    """"""
+    DB_MANAGER.use()
+    print(email, project_id)
+    DB_MANAGER.query(
+        f"""
+        SELECT dev.email
+        FROM developers dev
+        WHERE dev.project_id = '{project_id}' 
+        AND dev.email = '{email}';
+    """
+    )
+    print(DB_MANAGER.query_result)
+    try:
+        if email == DB_MANAGER.query_result[0][0]:
+            print("returned True")
+            return {"msg": ""}
+    except IndexError as e:
+        return {"msg": "Error"}
+    return {"msg": "Error"}
+
+
 "++++++++++++++++++++Organization/Project Table Apis+++++++++++++++++++"
 
 
@@ -354,7 +377,7 @@ async def check_user_authority(
         SELECT * 
         FROM admins
         WHERE admins.email = '{email}'
-        AND admins.name = '{org_name}';"""
+        AND admins.organization = '{org_name}';"""
         )
 
     if len(DB_MANAGER.query_result) != 0:
@@ -421,7 +444,6 @@ async def user_part_of_org(email: str, org_name: str) -> dict[str, Any]:
     print(DB_MANAGER.query_result)
     try:
         if email == DB_MANAGER.query_result[0][0]:
-            print("returned True")
             return {"msg": ""}
     except IndexError as e:
         return {"msg": "Error"}
@@ -527,6 +549,7 @@ async def add_employee(
 
     DB_MANAGER.use()
 
+    print("check: ", end=" ")
     q = f"""SELECT * 
         FROM employees 
         WHERE email = '{email}'
@@ -536,6 +559,8 @@ async def add_employee(
 
     if len(DB_MANAGER.query_result) != 0:
         return {"msg": "employee already exists"}
+
+    print("Joining")
 
     DB_MANAGER.query(
         ProjM().employees.insert(

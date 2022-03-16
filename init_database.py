@@ -68,6 +68,19 @@ def init_db() -> DBManager:
                 *(dev["email"], rd.choice(td.tprojects)["id"])
             )
 
+        db.query(
+            ProjM().users.insert(
+                {
+                    "email": "root@root",
+                    "username": "root",
+                    "firstname": "root",
+                    "lastname": "root",
+                    "password": "root",
+                }
+            ),
+            *("root@root", "root", "root", "root", "root")
+        )
+
     return db
 
 

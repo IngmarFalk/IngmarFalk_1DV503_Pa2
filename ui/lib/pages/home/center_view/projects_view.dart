@@ -111,14 +111,36 @@ class DescriptionToggleNotifier extends ChangeNotifier {
 
     final String msg = json.decode(resp.body)["msg"];
 
-    if (msg == "") {
+    if (msg == "" && _userJoinedOrg == false) {
       _userJoinedOrg = true;
       notifyListeners();
-      return;
     }
-
-    _userJoinedOrg = false;
   }
+
+  // Future<void> isPartOfProject(
+  //     Map<String?, dynamic>? userData, int projectID) async {
+  //   final jsonData = json.encode(
+  //     {
+  //       "email": userData!['email'],
+  //       "project_id": projectID,
+  //     },
+  //   );
+  //   final resp = await http.post(
+  //     Uri.parse(
+  //         'http://127.0.0.1:8000/userpop/${userData['email']}/$projectID/'),
+  //     body: jsonData,
+  //   );
+
+  //   final String msg = json.decode(resp.body)["msg"];
+
+  //   if (msg == "") {
+  //     _userJoinedOrg = true;
+  //     notifyListeners();
+  //     return;
+  //   }
+
+  //   _userJoinedOrg = false;
+  // }
 }
 
 class CenterViewTile extends ConsumerWidget {
@@ -451,22 +473,22 @@ class TileTitle extends StatelessWidget {
       child: Center(
         child: InkWell(
           onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) {
-                  if (choice.choice == SideBarChoice.projects) {
-                    return EditProject(data: data);
-                  } else if (choice.choice == SideBarChoice.orgs) {
-                    return EditOrg(data: data);
-                  } else if (choice.choice == SideBarChoice.tasks) {
-                    return EditTask(data: data);
-                  } else {
-                    return Container();
-                  }
-                },
-              ),
-            );
+            // Navigator.push(
+            //   context,
+            //   MaterialPageRoute(
+            //     builder: (context) {
+            //       if (choice.choice == SideBarChoice.projects) {
+            //         return EditProject(data: data);
+            //       } else if (choice.choice == SideBarChoice.orgs) {
+            //         return EditOrg(data: data);
+            //       } else if (choice.choice == SideBarChoice.tasks) {
+            //         return EditTask(data: data);
+            //       } else {
+            //         return Container();
+            //       }
+            //     },
+            //   ),
+            // );
           },
           child: Text(
             choice.choice == SideBarChoice.projects
@@ -534,7 +556,6 @@ class JoinLeaveBtn extends StatelessWidget {
 
           if (msg == "") {
             status.userJoinedOrg = true;
-            InheritedLoginProvider.of(context).update();
           } else {
             showDialog(
               context: context,
