@@ -100,8 +100,10 @@ class App extends ConsumerWidget {
           RegisterScreen.id: (context) => const RegisterScreen(),
           CreateProjectPage.id: (context) => CreateProjectPage(
               email: InheritedLoginProvider.of(context).userData?["email"]),
-          CreateOrgPage.id: (context) => const CreateOrgPage(),
-          CreateTaskPage.id: (context) => const CreateTaskPage()
+          CreateOrgPage.id: (context) => CreateOrgPage(
+              email: InheritedLoginProvider.of(context).userData?["email"]),
+          CreateTaskPage.id: (context) => CreateTaskPage(
+              email: InheritedLoginProvider.of(context).userData?["email"]),
         },
         initialRoute: Home.id,
       ),

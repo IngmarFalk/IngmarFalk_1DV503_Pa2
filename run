@@ -1,1 +1,2 @@
+python init_database.py
 uvicorn main:app --reload

@@ -7,6 +7,9 @@ import 'package:ui/main.dart';
 import 'package:ui/pages/home/center_view/filter_button_notifier.dart';
 import 'package:ui/pages/home/center_view/search_field.dart';
 import 'package:ui/pages/home/home.dart';
+import 'package:ui/pages/org/edit_org.dart';
+import 'package:ui/pages/projects/edit_project.dart';
+import 'package:ui/pages/tasks/edit_task.dart';
 import 'package:ui/theme/colors.dart';
 import 'package:ui/widgets/widgets.dart';
 import 'package:http/http.dart' as http;
@@ -30,9 +33,7 @@ class CenterView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // final TextEditingController _teController = useTextEditingController();
     Size size = MediaQuery.of(context).size;
-    final filtering = ref.watch(_filteringNotifier);
 
     return Container(
       margin: const EdgeInsets.all(10),
@@ -50,9 +51,6 @@ class CenterView extends ConsumerWidget {
               height: 50,
               child: Row(
                 children: [
-                  // FilterButton(
-                  //   filteringNotifier: _filteringNotifier,
-                  // ),
                   Expanded(
                     child: SearchField2(
                       teController: teController,
@@ -106,18 +104,14 @@ class DescriptionToggleNotifier extends ChangeNotifier {
         "org_name": orgName,
       },
     );
-    print(jsonData);
     final resp = await http.post(
       Uri.parse('http://127.0.0.1:8000/userpoo/${userData['email']}/$orgName/'),
-      // Uri.parse('http://127.0.0.1:8000/userpoo/'),
       body: jsonData,
     );
 
     final String msg = json.decode(resp.body)["msg"];
-    print("Message: $msg");
 
     if (msg == "") {
-      print("Got into msg = ''");
       _userJoinedOrg = true;
       notifyListeners();
       return;
@@ -183,13 +177,14 @@ class CenterViewTile extends ConsumerWidget {
             };
           } else if (choice.choice == SideBarChoice.tasks) {
             data = {
-              "task_name": items![idx][0],
-              "description": items[idx][1],
-              "developer": items[idx][2],
-              "project_id": items[idx][3],
-              "organization": items[idx][4],
-              "dueDate": items[idx][5],
-              "status": items[idx][6],
+              "id": items![idx][0],
+              "task_name": items[idx][1],
+              "description": items[idx][2],
+              "developer": items[idx][3],
+              "project_id": items[idx][4],
+              "organization": items[idx][5],
+              "dueDate": items[idx][6],
+              "status": items[idx][7],
             };
           }
           return Tile(data: data, choice: choice);
@@ -232,8 +227,8 @@ class Tile extends ConsumerWidget {
       descriptionItems.add(
         Container(
           margin: const EdgeInsets.symmetric(horizontal: 5),
-          height: 50,
-          width: 120,
+          height: 100,
+          width: 110,
           child: Column(
             mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.center,
@@ -288,7 +283,7 @@ class TileItems extends StatelessWidget {
   Widget build(BuildContext context) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 100),
-      height: status.open ? 200 : 100,
+      height: status.open ? 220 : 100,
       width: 500,
       margin: const EdgeInsets.all(5),
       decoration: BoxDecoration(
@@ -323,23 +318,7 @@ class TileItems extends StatelessWidget {
                 ),
                 Expanded(
                   flex: 5,
-                  child: SizedBox(
-                    height: 100,
-                    width: 200,
-                    child: Center(
-                      child: Text(
-                        choice.choice == SideBarChoice.projects
-                            ? data["proj_name"]
-                            : choice.choice == SideBarChoice.orgs
-                                ? data["org_name"]
-                                : data["task_name"],
-                        style: GoogleFonts.montserrat(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
+                  child: TileTitle(choice: choice, data: data),
                 ),
                 choice.choice != SideBarChoice.tasks
                     ? Expanded(
@@ -354,63 +333,10 @@ class TileItems extends StatelessWidget {
                     : const SizedBox(),
                 Expanded(
                   flex: 1,
-                  child: Container(
-                    height: 70,
-                    padding: const EdgeInsets.only(right: 20, top: 7),
-                    child: SideBarItem(
-                      onTap: () async {
-                        if (InheritedLoginProvider.of(context).isLoggedIn ==
-                            false) {
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return const ErrorPopUp(
-                                  msg: "You need to be logged in");
-                            },
-                          );
-                          return;
-                        }
-                        if (data["org_name"] == null) {
-                          data["org_name"] = "";
-                        }
-
-                        var resp;
-                        if (choice.choice == SideBarChoice.projects) {
-                          resp = await http.post(
-                            Uri.parse(
-                              'http://127.0.0.1:8000/delete_project/?email=${userD!['email']}&project_id=${data['id']}',
-                            ),
-                          );
-                        } else if (choice.choice == SideBarChoice.orgs) {
-                          resp = await http.post(
-                            Uri.parse(
-                              'http://127.0.0.1:8000/delete_org/?email=${userD!['email']}&org_name=${data['org_name']}',
-                            ),
-                          );
-                        } else if (choice.choice == SideBarChoice.tasks) {
-                          resp = await http.post(
-                            Uri.parse(
-                              'http://127.0.0.1:8000/delete_task/email=${userD!['email']}&task_id=${data['id']}',
-                            ),
-                          );
-                        }
-                        final body = json.decode(resp.body);
-
-                        if (body["msg"] == "") {
-                          InheritedLoginProvider.of(context).update();
-                        } else {
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return ErrorPopUp(msg: body["msg"]);
-                            },
-                          );
-                        }
-                      },
-                      text: "D E L E T E",
-                      fontSize: 10,
-                      color: kcDarkBlue,
-                    ),
+                  child: DeleteBtn(
+                    data: data,
+                    choice: choice,
+                    userD: userD,
                   ),
                 ),
               ],
@@ -429,6 +355,131 @@ class TileItems extends StatelessWidget {
                 )
               : const SizedBox(),
         ],
+      ),
+    );
+  }
+}
+
+class DeleteBtn extends StatelessWidget {
+  const DeleteBtn({
+    Key? key,
+    required this.data,
+    required this.choice,
+    required this.userD,
+  }) : super(key: key);
+
+  final Map<String, dynamic> data;
+  final SideBarChoiceNotifier choice;
+  final Map<String?, dynamic>? userD;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 70,
+      padding: const EdgeInsets.only(right: 20, top: 7),
+      child: SideBarItem(
+        onTap: () async {
+          if (InheritedLoginProvider.of(context).isLoggedIn == false) {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return const ErrorPopUp(msg: "You need to be logged in");
+              },
+            );
+            return;
+          }
+          if (data["org_name"] == null) {
+            data["org_name"] = "";
+          }
+
+          var resp;
+          if (choice.choice == SideBarChoice.projects) {
+            resp = await http.post(
+              Uri.parse(
+                'http://127.0.0.1:8000/delete_project/?email=${userD!['email']}&project_id=${data['id']}',
+              ),
+            );
+          } else if (choice.choice == SideBarChoice.orgs) {
+            resp = await http.post(
+              Uri.parse(
+                'http://127.0.0.1:8000/delete_org/?email=${userD!['email']}&org_name=${data['org_name']}',
+              ),
+            );
+          } else if (choice.choice == SideBarChoice.tasks) {
+            resp = await http.post(
+              Uri.parse(
+                'http://127.0.0.1:8000/delete_task/?email=${userD!['email']}&task_id=${data['id']}',
+              ),
+            );
+          }
+          final body = json.decode(resp.body);
+
+          if (body["msg"] == "") {
+            InheritedLoginProvider.of(context).update();
+          } else {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return ErrorPopUp(msg: body["msg"]);
+              },
+            );
+          }
+        },
+        text: "D E L E T E",
+        fontSize: 10,
+        color: kcDarkBlue,
+      ),
+    );
+  }
+}
+
+class TileTitle extends StatelessWidget {
+  const TileTitle({
+    Key? key,
+    required this.choice,
+    required this.data,
+  }) : super(key: key);
+
+  final SideBarChoiceNotifier choice;
+  final Map<String, dynamic> data;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 100,
+      width: 200,
+      child: Center(
+        child: InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) {
+                  if (choice.choice == SideBarChoice.projects) {
+                    return EditProject(data: data);
+                  } else if (choice.choice == SideBarChoice.orgs) {
+                    return EditOrg(data: data);
+                  } else if (choice.choice == SideBarChoice.tasks) {
+                    return EditTask(data: data);
+                  } else {
+                    return Container();
+                  }
+                },
+              ),
+            );
+          },
+          child: Text(
+            choice.choice == SideBarChoice.projects
+                ? data["proj_name"]
+                : choice.choice == SideBarChoice.orgs
+                    ? data["org_name"]
+                    : data["task_name"],
+            style: GoogleFonts.montserrat(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
       ),
     );
   }

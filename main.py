@@ -1,24 +1,12 @@
 #! venv/bin/python
 
-import json
 from typing import Any
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from models.base import Database, Table, Val, VARCHAR, INT, FLOAT, DOUBLE
-from app import init_db, ProjM
+from init_database import init_db, ProjM
 
 app = FastAPI()
 
-# origins = [
-#     "http://localhost",
-#     "https://localhost:8008",
-#     "http://localhost:8000",
-#     "http://localhost:8080",
-#     "http://127.0.0.1:8000",
-#     "http://194.47.188.32",
-#     "http://194.47.188.32",
-#     "http://194.47.188.32/login",
-# ]
 
 app.add_middleware(
     CORSMiddleware,
@@ -61,10 +49,7 @@ async def check_for_user(user_data: dict[Any, Any]) -> bool:
 SELECT * 
 FROM users 
 WHERE email = '{user_data['email']}' 
-AND username IN (
-    SELECT username 
-    FROM users 
-    WHERE email = '{user_data['email']}');"""
+    """
     )
 
     """
@@ -103,7 +88,12 @@ async def validate(login_data: dict[Any, Any]) -> str:
 
     DB_MANAGER.use()
     DB_MANAGER.query(
-        f"SELECT * FROM users WHERE email = '{login_data['email']}' AND password = '{login_data['password']}'"
+        f"""
+        SELECT * 
+        FROM users 
+        WHERE email = '{login_data['email']}' 
+        AND password = '{login_data['password']}'
+        """
     )
     if len(DB_MANAGER.query_result) == 0:
         return "Invalid Password"
@@ -156,33 +146,6 @@ async def delete_user(user_data: dict[Any, Any], tables: list[str]) -> str:
     return ""
 
 
-# @app.post(ROUTES["delete_user"])
-# async def delete_user(userData: dict[Any, Any], tables: list[Table]) -> dict[Any, Any]:
-#     "Deletes a user from the database"
-#     return {}
-
-
-#     q = f"""DELETE FROM {', '.join([repr(table) for table in tables])} WHERE """
-#     conds = [repr(table) + ".userid = users.id" for table in tables]
-#     q += " and ".join(conds)
-#     print(q)
-# )
-# return {}
-
-# DB_MANAGER.use()
-# DB_MANAGER.query(
-# f"""DELETE FROM users, developers as devs, projectleaders as pls, admins
-# INNER JOIN admins
-# ON users.username = admins.name
-# WHERE users.username = {userData['username']}
-# INNER JOIN developers as devs
-# ON devs.name = users.username
-# WHERE users.username = {userData['username']}
-# INNER JOIN projectleaders as pls
-# ON pls.name = users.username
-# WHERE users.username = {userData['username']};"""
-
-
 "++++++++++++++++++++Project Table Apis+++++++++++++++++++"
 
 
@@ -205,7 +168,8 @@ async def create_all_projects_view() -> None:
     """Create a view of all the projects within the database"""
     DB_MANAGER.use()
     DB_MANAGER.query(
-        """CREATE OR REPLACE VIEW all_projects 
+        """
+    CREATE OR REPLACE VIEW all_projects 
     AS SELECT 
         id, 
         name, 
@@ -346,9 +310,19 @@ async def delete_project(email: str, project_id: int) -> dict[Any, Any]:
     if not auth["projectleader"] and not auth["admin"] and not auth["root"]:
         return {"msg": "You are not authorized to delete this project"}
 
-    DB_MANAGER.query(f"DELETE FROM projects WHERE id = {project_id};")
-    DB_MANAGER.query(f"DELETE FROM projectleaders WHERE project_id = {project_id};")
-    DB_MANAGER.query(f"DELETE FROM developers WHERE project_id = {project_id};")
+    DB_MANAGER.query(
+        f"""
+        DELETE pjl, projects, dev, tasks
+        FROM projects
+        LEFT JOIN projectleaders pjl
+        ON pjl.project_id = projects.id
+        LEFT JOIN developers dev
+        ON dev.project_id = projects.id
+        LEFT JOIN tasks
+        ON tasks.project_id = projects.id
+        WHERE projects.id = {project_id};
+        """
+    )
 
     return {"msg": ""}
 
@@ -440,8 +414,6 @@ async def user_part_of_org(email: str, org_name: str) -> dict[str, Any]:
         f"""
         SELECT emp.email
         FROM employees emp
-        INNER JOIN organizations org
-        ON emp.organization = org.name
         WHERE emp.organization = '{org_name}' 
         AND emp.email = '{email}';
     """
@@ -501,7 +473,7 @@ async def create_org(org_data: dict[Any, Any], email: str) -> dict[Any, Any]:
             ),
             *(email, org_data["name"]),
         )
-    return {}
+    return {"msg": ""}
 
 
 @app.post(ROUTES["delete_org"])
@@ -523,9 +495,25 @@ async def delete_org(email: str, org_name: str) -> dict[Any, Any]:
     if not auth["admin"] and not auth["root"]:
         return {"msg": "You are not authorized to delete this organization"}
 
-    DB_MANAGER.query(f"DELETE FROM organizations WHERE name = '{org_name}'")
-    DB_MANAGER.query(f"DELETE FROM admins WHERE organization = '{org_name}'")
-    DB_MANAGER.query(f"DELETE FROM projectleaders WHERE organization = '{org_name}'")
+    DB_MANAGER.query(
+        f"""
+    DELETE emp, tasks, projects, dev, org, pjl, admins 
+    FROM organizations org
+    LEFT JOIN tasks
+    ON tasks.organization = org.name
+    LEFT JOIN employees emp
+    ON emp.organization = org.name
+    LEFT JOIN projects
+    ON projects.organization = org.name
+    LEFT JOIN developers dev
+    ON dev.project_id = projects.id
+    LEFT JOIN admins
+    ON admins.organization = org.name
+    LEFT JOIN projectleaders pjl
+    ON pjl.organization = org.name
+    WHERE org.name = '{org_name}';
+    """
+    )
 
     return {"msg": ""}
 
@@ -600,6 +588,7 @@ async def create_all_tasks_view() -> None:
     q = """
     CREATE OR REPLACE VIEW all_tasks 
     AS SELECT 
+        id,
         title, 
         description, 
         developer,
@@ -615,4 +604,22 @@ async def create_all_tasks_view() -> None:
 @app.post(ROUTES["delete_task"])
 async def delete_task(email: str, task_id: int) -> dict[Any, Any]:
     """"""
-    return {}
+    DB_MANAGER.use()
+
+    "First we need to check wether user has the authority to delete project"
+
+    DB_MANAGER.query(
+        f"""
+        SELECT *
+        FROM tasks
+        WHERE developer = '{email}'
+        AND id = '{task_id}';
+        """
+    )
+
+    if DB_MANAGER.query_result == 0:
+        return {"msg": "You are not authorized to delete this organization"}
+
+    DB_MANAGER.query(f"DELETE FROM tasks WHERE id = '{task_id}'")
+
+    return {"msg": ""}

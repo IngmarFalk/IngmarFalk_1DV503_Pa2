@@ -7,8 +7,12 @@ import 'package:ui/widgets/widgets.dart';
 
 class CreateTaskPage extends ConsumerWidget {
   static const String id = "/create_task";
+  String? email;
 
-  const CreateTaskPage({Key? key}) : super(key: key);
+  CreateTaskPage({
+    this.email,
+    Key? key,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
